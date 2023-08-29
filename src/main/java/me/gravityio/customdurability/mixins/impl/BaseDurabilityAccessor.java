@@ -10,7 +10,7 @@ import java.util.EnumMap;
 @Mixin(ArmorMaterials.class)
 public interface BaseDurabilityAccessor {
     @Accessor("BASE_DURABILITY")
-    public static EnumMap<ArmorItem.Type, Integer> BASE_DURABILITY() {
+    static EnumMap<ArmorItem.Type, Integer> BASE_DURABILITY() {
         throw new AssertionError();
     }
 }
