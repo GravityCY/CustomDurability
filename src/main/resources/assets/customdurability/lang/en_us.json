@@ -1,17 +1,9 @@
 {
   "yacl.customdurability.title": "Custom Durability",
 
-  "yacl.customdurability.wood_durability.label": "Wood Durability",
-  "yacl.customdurability.stone_durability.label": "Stone Durability",
-  "yacl.customdurability.iron_durability.label": "Iron Durability",
-  "yacl.customdurability.diamond_durability.label": "Diamond Durability",
-  "yacl.customdurability.gold_durability.label": "Gold Durability",
-  "yacl.customdurability.netherite_durability.label": "Netherite Durability",
+  "yacl.customdurability.armor_is_durability_multiplier.label": "Armor Multiplier",
+  "yacl.customdurability.armor_is_durability_multiplier.description": "Whether Armor Durabilities should be multiplied using the Default Vanilla Multipliers.\n\nDefault Multipliers:\n§7Helmet: §a11\n§7Chestplate: §a16\n§7Leggings: §a15\n§7Boots: §a13\n\n§fFor Example; The Durability of Boot Armors would be §c13 * Durability§f.",
 
-  "yacl.customdurability.wood_durability.description": "The Durability of all Wooden Tools.",
-  "yacl.customdurability.stone_durability.description": "The Durability of all Stone Tools.",
-  "yacl.customdurability.iron_durability.description": "The Durability of all Iron Tools.",
-  "yacl.customdurability.diamond_durability.description": "The Durability of all Diamond Tools.",
-  "yacl.customdurability.gold_durability.description": "The Durability of all Gold Tools.",
-  "yacl.customdurability.netherite_durability.description": "The Durability of all Netherite Tools."
+  "yacl.customdurability.overrides.label": "Durability Overrides",
+  "yacl.customdurability.overrides.description": "Add Custom Durabilities for items!\n\n§cHas to be in the format of §8'§7key;durability§8'§c.\n\n§aAccepts Item Tags!"
 }
