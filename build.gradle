@@ -10,8 +10,30 @@ project.dependencies.add("minecraft", "com.mojang:minecraft:${project.minecraft_
 project.dependencies.add("mappings", "net.fabricmc:yarn:${project.project.yarn_version}:v2")
 project.dependencies.add("modImplementation", "net.fabricmc:fabric-loader:${project.loader_version}")
 
-repositories {}
-dependencies {}
+repositories {
+    mavenLocal()
+    maven { url = "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url = "https://maven.terraformersmc.com/" } // Mod Menu
+    maven {
+        name 'Xander Maven'
+        url 'https://maven.isxander.dev/releases'
+    }
+    maven { url = "https://jitpack.io"	}
+}
+dependencies {
+    modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_version"
+    // Mod Menu
+    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    // YACL
+    modImplementation "dev.isxander.yacl:yet-another-config-lib-fabric:$project.yacl_version"
+    // My Library currently hosted locally, but is on my github
+    include modApi("me.gravityio.goodlib:glib-yacl-utils:$project.glib_version")
+
+    // Mixin Extras
+    implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
+    annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
+    include("com.github.LlamaLad7:MixinExtras:0.1.1")
+}
 
 base {
     archivesName = project.mod_id

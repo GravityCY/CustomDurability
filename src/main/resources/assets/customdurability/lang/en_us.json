@@ -1,0 +1,17 @@
+{
+  "yacl.customdurability.title": "Custom Durability",
+
+  "yacl.customdurability.wood_durability.label": "Wood Durability",
+  "yacl.customdurability.stone_durability.label": "Stone Durability",
+  "yacl.customdurability.iron_durability.label": "Iron Durability",
+  "yacl.customdurability.diamond_durability.label": "Diamond Durability",
+  "yacl.customdurability.gold_durability.label": "Gold Durability",
+  "yacl.customdurability.netherite_durability.label": "Netherite Durability",
+
+  "yacl.customdurability.wood_durability.description": "The Durability of all Wooden Tools.",
+  "yacl.customdurability.stone_durability.description": "The Durability of all Stone Tools.",
+  "yacl.customdurability.iron_durability.description": "The Durability of all Iron Tools.",
+  "yacl.customdurability.diamond_durability.description": "The Durability of all Diamond Tools.",
+  "yacl.customdurability.gold_durability.description": "The Durability of all Gold Tools.",
+  "yacl.customdurability.netherite_durability.description": "The Durability of all Netherite Tools."
+}

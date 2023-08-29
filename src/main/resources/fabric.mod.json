@@ -12,20 +12,30 @@
     "issues": "${mod_sources}"
   },
   "license": "${mod_license}",
-  "icon": "assets/example/icon.png",
+  "icon": "assets/customdurability/icon.png",
 
   "environment": "*",
   "entrypoints": {
+    "preLaunch": [
+      "me.gravityio.customdurability.CustomDurabilityMod"
+    ],
     "main": [
-      "me.gravityio.example.ExampleMod"
+      "me.gravityio.customdurability.CustomDurabilityMod"
+    ],
+    "client":[
+      "me.gravityio.customdurability.client.CustomDurabilityClientMod"
+    ],
+    "modmenu": [
+      "me.gravityio.customdurability.compat.ModMenuApiImpl"
     ]
   },
   "mixins": [
-    "example.mixins.json"
+    "customdurability.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
     "minecraft": "${minecraft_version}",
+    "yet_another_config_lib_v3": "*",
     "java": ">=17"
   }
 }
