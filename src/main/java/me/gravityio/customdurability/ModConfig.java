@@ -126,7 +126,14 @@ public class ModConfig implements ConfigFrame<ModConfig> {
     public void removeDurabilityOverride(String idOrTagStr) {
         var idWithTag = new IdentifierWithTag(idOrTagStr);
         this.removeDuplicates(idWithTag);
-        this.durability_overrides.remove(idWithTag.toShortString());
+        this.durability_overrides.remove(idWithTag.toShortString()) ;
+    }
+
+    public boolean hasDurabilityOverride(String idOrTagStr) {
+        var idWithTag = new IdentifierWithTag(idOrTagStr);
+        var shortBool = this.durability_overrides.containsKey(idWithTag.toShortString());
+        var longBool = this.durability_overrides.containsKey(idWithTag.toFullString());
+        return shortBool || longBool;
     }
 
     public void removeDuplicates(IdentifierWithTag idOrTag) {

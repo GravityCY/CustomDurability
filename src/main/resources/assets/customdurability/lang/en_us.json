@@ -12,9 +12,10 @@
   "commands.customdurability.armor_multiplier.set.on": "§aEnabled§r Armor Durability Multiplier.",
   "commands.customdurability.armor_multiplier.set.off": "§cDisabled§r Armor Durability Multiplier.",
 
+  "commands.customdurability.clear.not_found": "§cNo Such Durability Override.",
   "commands.customdurability.clear": "§cCleared Durability Overrides.",
+  "commands.customdurability.clear.remove": "§7Removed Durability Override of '%s§7'.",
   "commands.customdurability.list": "§aDurabilities:",
   "commands.customdurability.list.none": "§aDurabilities: §7None",
-  "commands.customdurability.set": "§7Set Durability of '%s§7' to %d.",
-  "commands.customdurability.set.remove": "§7Removed Durability Override of '%s§7'."
+  "commands.customdurability.set": "§7Set Durability of '%s§7' to %d."
 }

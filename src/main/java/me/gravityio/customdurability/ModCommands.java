@@ -10,7 +10,6 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 
 import java.util.Map;
 
@@ -85,11 +84,16 @@ public class ModCommands {
             var item = RegistryPredicateArgumentType.getPredicate(context, "item", RegistryKeys.ITEM, new DynamicCommandExceptionType(o -> () -> ""));
             var str = item.asString();
 
+            if (!ModConfig.INSTANCE.hasDurabilityOverride(str)) {
+                source.sendFeedback(Text.translatable("commands.customdurability.clear.not_found"), false);
+                return 1;
+            }
+
             ModConfig.INSTANCE.removeDurabilityOverride(str);
             ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
             ModConfig.GSON.save();
 
-            source.sendFeedback(Text.translatable("commands.customdurability.set.remove", str), false);
+            source.sendFeedback(Text.translatable("commands.customdurability.clear.remove", str), false);
             return 1;
 
         });
