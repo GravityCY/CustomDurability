@@ -2,40 +2,44 @@ package me.gravityio.customdurability;
 
 import net.minecraft.network.PacketByteBuf;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class DurabilityRegistry {
-    private static final Map<String, Integer> durability_overrides = new HashMap<>();
+    private static final LinkedHashMap<String, Integer> durabilityOverrides = new LinkedHashMap<>();
     public static void register(String itemId, int durability) {
-        durability_overrides.put(itemId, durability);
+        durabilityOverrides.put(itemId, durability);
     }
 
     public static int get(String itemId) {
-        return durability_overrides.get(itemId);
+        return durabilityOverrides.get(itemId);
     }
 
     public static void forEach(BiConsumer<String, Integer> consumer) {
-        durability_overrides.forEach(consumer);
+        durabilityOverrides.forEach(consumer);
     }
 
     public static void clear() {
-        durability_overrides.clear();
+        durabilityOverrides.clear();
     }
 
-    public static void setFrom(Map<String, Integer> map) {
+    public static List<String> setFrom(Map<String, Integer> newDurabilities) {
+        List<String> removed = new ArrayList<>();
+        durabilityOverrides.forEach((k, v) -> {
+            if (newDurabilities.containsKey(k)) return;
+            removed.add(k);
+        });
         clear();
-        map.forEach(DurabilityRegistry::register);
+        newDurabilities.forEach(DurabilityRegistry::register);
+        return removed;
     }
 
     public static void toPacket(PacketByteBuf buf) {
-        buf.writeMap(durability_overrides, PacketByteBuf::writeString, PacketByteBuf::writeInt);
+        buf.writeMap(durabilityOverrides, PacketByteBuf::writeString, PacketByteBuf::writeInt);
     }
 
-    public static void fromPacket(PacketByteBuf buf) {
-        clear();
+    public static List<String> fromPacket(PacketByteBuf buf) {
         var newMap = buf.readMap(PacketByteBuf::readString, PacketByteBuf::readInt);
-        DurabilityRegistry.setFrom(newMap);
+        return DurabilityRegistry.setFrom(newMap);
     }
 }

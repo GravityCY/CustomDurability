@@ -8,26 +8,25 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
 public class CustomDurabilityClientMod implements ClientModInitializer {
+    public static boolean IS_INTEGRATED = false;
     @Override
     public void onInitializeClient() {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             CustomDurabilityMod.DEBUG("[CustomDurabilityClientMod] Joining a world!");
-            CustomDurabilityMod.IS_INTEGRATED = client.isIntegratedServerRunning();
-            CustomDurabilityMod.ALLOW_REGISTRY_MOD = CustomDurabilityMod.IS_INTEGRATED;
-            CustomDurabilityMod.IN_WORLD = true;
+            CustomDurabilityClientMod.IS_INTEGRATED = client.isIntegratedServerRunning();
+            CustomDurabilityMod.ALLOW_REGISTRY_MOD = CustomDurabilityClientMod.IS_INTEGRATED;
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             CustomDurabilityMod.DEBUG("[CustomDurabilityClientMod] Disconnecting from a world!");
-            CustomDurabilityMod.IS_INTEGRATED = false;
-            CustomDurabilityMod.ALLOW_REGISTRY_MOD = true;
-            CustomDurabilityMod.IN_WORLD = false;
+            CustomDurabilityClientMod.IS_INTEGRATED = false;
+            CustomDurabilityMod.ALLOW_REGISTRY_MOD = false;
         });
 
         ClientPlayNetworking.registerGlobalReceiver(SyncPacket.TYPE, (packet, player, responseSender) -> {
-            if (CustomDurabilityMod.IS_INTEGRATED) return;
+            if (CustomDurabilityClientMod.IS_INTEGRATED) return;
             CustomDurabilityMod.DEBUG("[CustomDurabilityClientMod] Applying Sync Packet!");
-            DurabilityRegistry.fromPacket(packet.buf);
-            CustomDurabilityMod.INSTANCE.updateItems();
+            var removed = DurabilityRegistry.fromPacket(packet.buf);
+            CustomDurabilityMod.INSTANCE.updateItems(removed);
         });
     }
 }

@@ -2,9 +2,10 @@ package me.gravityio.customdurability;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import me.gravityio.customdurability.mixins.impl.BaseDurabilityAccessor;
-import me.gravityio.customdurability.mixins.impl.MaxDamageAccessor;
+import me.gravityio.customdurability.mixins.inter.DamageItem;
 import me.gravityio.customdurability.network.SyncPacket;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
@@ -20,19 +21,25 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * The entrypoint to CustomDurability<br>
+ * A mod that allows to change the durability of items
+ */
 public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint {
     public static final String MOD_ID = "customdurability";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-    public static boolean DEBUG = false;
+    public static boolean IS_DEBUG = false;
 
     public static CustomDurabilityMod INSTANCE;
     public static MinecraftServer SERVER = null;
-    public static boolean ALLOW_REGISTRY_MOD = true;
-    public static boolean IS_INTEGRATED = false;
-    public static boolean IN_WORLD = false;
+    // Whether to allow changing the durability of items when the config changes
+    public static boolean ALLOW_REGISTRY_MOD = false;
 
     public static void DEBUG(String message, Object... objects) {
-        if (!DEBUG) return;
+        if (!IS_DEBUG) return;
 
         LOGGER.info(message, objects);
     }
@@ -41,13 +48,9 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
     @Override
     public void onPreLaunch() {
         INSTANCE = this;
-
-        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            DEBUG = true;
-        }
+        IS_DEBUG = FabricLoader.getInstance().isDevelopmentEnvironment();
 
         MixinExtrasBootstrap.init();
-
         ModConfig.GSON.load();
         ModConfig.INSTANCE = ModConfig.GSON.getConfig();
     }
@@ -59,19 +62,19 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
             DEBUG("[CustomDurabilityMod] Server Started");
             CustomDurabilityMod.SERVER = server;
-            CustomDurabilityMod.IN_WORLD = true;
+            CustomDurabilityMod.ALLOW_REGISTRY_MOD = true;
             this.updateRegistry();
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             DEBUG("[CustomDurabilityMod] Server Stopped");
             CustomDurabilityMod.SERVER = null;
-            CustomDurabilityMod.IN_WORLD = false;
+            CustomDurabilityMod.ALLOW_REGISTRY_MOD = false;
         });
 
         // When the durability is changed in our config, we update the items with the new durabilities and send the new registry to all players
         ModEvents.ON_DURABILITY_CHANGED.register(() -> {
-            if (!CustomDurabilityMod.IN_WORLD || !CustomDurabilityMod.ALLOW_REGISTRY_MOD) return;
+            if (!CustomDurabilityMod.ALLOW_REGISTRY_MOD) return;
             this.updateRegistry();
             DEBUG("[CustomDurabilityMod] Durability Registry Changed Sending Sync Packet to All Players!");
             CustomDurabilityMod.SERVER.getPlayerManager().getPlayerList().forEach(player ->
@@ -79,55 +82,96 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
         });
 
         ModEvents.ON_AFTER_SYNC_DATAPACK.register((player) -> {
-            DEBUG("{} joined the server! Sending Sync Packet", player.getName());
+            DEBUG("[CustomDurabilityMod] {} joined the server! Sending Sync Packet", player.getName());
             ServerPlayNetworking.send(player, new SyncPacket());
         });
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->
+                dispatcher.register(ModCommands.doBuild(registry, environment))
+        );
 
     }
 
     public void updateRegistry() {
-        DurabilityRegistry.setFrom(ModConfig.INSTANCE.durability_overrides);
-        this.updateItems();
+        DEBUG("[CustomDurabilityMod] Updating Durability Registry");
+        List<String> removed = DurabilityRegistry.setFrom(ModConfig.INSTANCE.durability_overrides);
+        this.updateItems(removed);
     }
 
-    public void updateItems() {
+    public void updateItems(List<String> removed) {
+        DEBUG("[CustomDurabilityMod] Updating Items from the Minecraft Registry with new durabilities.");
         DurabilityRegistry.forEach(this::onDurabilityChanged);
+        removed.forEach(this::onResetDurability);
     }
 
     // When our registry changes we update the items with the new durabilities
-    public void onDurabilityChanged(String changedItemStringId, int newDurability) {
-        var isTag = changedItemStringId.charAt(0) == '#';
-        TagKey<Item> tag = null;
-        if (isTag) {
-            var idString = changedItemStringId.substring(1);
-            var id = new Identifier(idString);
-            tag = TagKey.of(RegistryKeys.ITEM, id);
-        }
-
-        if (isTag) {
-            var optEntryList = Registries.ITEM.getEntryList(tag);
-            if (optEntryList.isEmpty()) {
-                DEBUG("[CustomDurabilityMod] No items under tag {} exist!", tag);
-                return;
-            }
-            var entryList = optEntryList.get();
-            for (RegistryEntry<Item> itemRegistryEntry : entryList) {
-                var item = itemRegistryEntry.value();
+    public void onDurabilityChanged(String itemIdOrTag, int newDurability) {
+        for (Item item : this.getItemsByIdOrTag(itemIdOrTag)) {
+            if (newDurability <= 0) {
+                this.setOriginalDamage(item);
+            } else {
                 this.setMaxDamage(item, newDurability);
             }
-        } else {
-            var id = new Identifier(changedItemStringId);
-            var item = Registries.ITEM.get(id);
-            this.setMaxDamage(item, newDurability);
         }
     }
 
-    public void setMaxDamage(Item item, int newMaxDamage){
-        var damageItem = (MaxDamageAccessor) item;
+    public void onResetDurability(String itemIdOrTag) {
+        for (Item item : getItemsByIdOrTag(itemIdOrTag)) {
+            this.setOriginalDamage(item);
+        }
+    }
+
+    public void setOriginalDamage(Item item) {
+        var damageItem = (DamageItem) item;
+        var originalDamage = damageItem.customDurability$getOriginalMaxDamage();
+        DEBUG("[CustomDurabilityMod] Setting original durability of {} to {}", item, originalDamage);
+        this.setMaxDamageRaw(damageItem, originalDamage);
+    }
+
+    public void setMaxDamage(Item item, int newMaxDamage) {
+        var damageItem = (DamageItem) item;
         if (damageItem instanceof ArmorItem armor && ModConfig.INSTANCE.armor_is_durability_multiplier)
             newMaxDamage = BaseDurabilityAccessor.BASE_DURABILITY().get(armor.getType()) * newMaxDamage;
-        DEBUG("[CustomDurabilityMod] Updating durability of {} to {}", item, newMaxDamage);
-        damageItem.setMaxDamage(newMaxDamage);
+        setMaxDamageRaw(damageItem, newMaxDamage);
+    }
+
+    public void setMaxDamageRaw(DamageItem damageItem, int newMaxDamage) {
+        DEBUG("[CustomDurabilityMod] Updating durability of {} to {}", damageItem, newMaxDamage);
+        if (damageItem.customDurability$getOriginalMaxDamage() == null) {
+            damageItem.customDurability$setOriginalMaxDamage(damageItem.customDurability$getMaxDamage());
+        }
+        damageItem.customDurability$setMaxDamage(newMaxDamage);
+    }
+
+    public boolean isTag(String id){
+        return id.charAt(0) == '#';
+    }
+
+    public TagKey<Item> getTag(String tag) {
+        if (!this.isTag(tag)) return null;
+        var idString = tag.substring(1);
+        var id = new Identifier(idString);
+        return TagKey.of(RegistryKeys.ITEM, id);
+    }
+
+    public List<Item> getItemsByIdOrTag(String idOrTag) {
+        List<Item> items = new ArrayList<>();
+        TagKey<Item> tag = this.getTag(idOrTag);
+        if (tag != null) {
+            var optEntryList = Registries.ITEM.getEntryList(tag);
+            if (optEntryList.isPresent()) {
+                var entryList = optEntryList.get();
+                for (RegistryEntry<Item> itemRegistryEntry : entryList) {
+                    var item = itemRegistryEntry.value();
+                    items.add(item);
+                }
+            } else {
+                DEBUG("[CustomDurabilityMod] No items under tag {} exist!", tag);
+            }
+        } else {
+            items.add(Registries.ITEM.get(new Identifier(idOrTag)));
+        }
+        return items;
     }
 
 
