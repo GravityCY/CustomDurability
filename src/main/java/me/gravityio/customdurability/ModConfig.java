@@ -27,6 +27,8 @@ import java.util.*;
 @Config(namespace = CustomDurabilityMod.MOD_ID)
 public class ModConfig implements ConfigFrame<ModConfig> {
 
+    public static final char SEPARATOR = ',';
+
     public static ModConfig INSTANCE;
     public static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("customdurability.json");
     public static final GsonBuilder GSON_BUILDER = new GsonBuilder()
@@ -87,7 +89,7 @@ public class ModConfig implements ConfigFrame<ModConfig> {
         List<String> overrides = new ArrayList<>();
 
         for (Map.Entry<String, Integer> entry : this.durability_overrides.entrySet()) {
-            var temp = entry.getKey() + ";" + entry.getValue();
+            var temp = entry.getKey() + SEPARATOR + entry.getValue();
             overrides.add(temp);
         }
 
@@ -102,7 +104,7 @@ public class ModConfig implements ConfigFrame<ModConfig> {
     }
 
     public void setDurabilityOverride(String idOrTagAndDurability) {
-        var splitArray = idOrTagAndDurability.split(";", 2);
+        var splitArray = idOrTagAndDurability.split(String.valueOf(SEPARATOR), 2);
         if (splitArray.length != 2) return;
         var key = splitArray[0];
         var second = splitArray[1];
@@ -142,7 +144,7 @@ public class ModConfig implements ConfigFrame<ModConfig> {
     }
 
     public boolean isValid(String override) {
-        var split = override.split(";", 2);
+        var split = override.split(String.valueOf(SEPARATOR), 2);
         if (split.length != 2) return false;
         if (isValidInt(split[1])) return false;
         return true;
