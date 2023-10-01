@@ -2,10 +2,10 @@
   "yacl.customdurability.title": "Custom Durability",
 
   "yacl.customdurability.armor_is_durability_multiplier.label": "Armor Multiplier",
-  "yacl.customdurability.armor_is_durability_multiplier.description": "Whether Armor Durabilities should be multiplied using the Default Vanilla Multipliers.\n\nDefault Multipliers:\n§7Helmet: §a11\n§7Chestplate: §a16\n§7Leggings: §a15\n§7Boots: §a13\n\n§fFor Example; The Durability of Boot Armor would be §c13 * Durability§f.",
+  "yacl.customdurability.armor_is_durability_multiplier.description": "Whether Armor Durabilities should be multiplied using the Default Vanilla Multipliers.\n\nDefault Multipliers:\n§7Helmet: §a11\n§7Chestplate: §a16\n§7Leggings: §a15\n§7Boots: §a13\n\n§fFor Example: The Durability of Boot Armor would be §c13 * Durability§f.",
 
   "yacl.customdurability.overrides.label": "Durability Overrides",
-  "yacl.customdurability.overrides.description": "Add Custom Durabilities for items!\n\n§cHas to be in the format of §8'§7key;durability§8'§c.\n\n§aAccepts Item Tags!",
+  "yacl.customdurability.overrides.description": "Add Custom Durabilities for items!\n\n§cHas to be in the format of §f'§7key,durability§f'§c.\n\n§aAccepts Item Tags!\n§fFor Example: §f'§7#example,13§f'§f.",
 
   "commands.customdurability.armor_multiplier.on": "Armor Durability Multiplier is §aOn.",
   "commands.customdurability.armor_multiplier.off": "Armor Durability Multiplier is §cOff.",
