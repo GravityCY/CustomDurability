@@ -12,7 +12,7 @@ Currently the way you declare an item's durability through the config screen is 
 typing it's id (or item tag) and then the durability with a semicolon in between them. \
 Eg. `minecraft:wooden_pickaxe;100` or `wooden_pickaxe;100`
 
-![Config Screen](https://i.imgur.com/fqrhzVx.png)
+![Config Screen](https://i.imgur.com/3evlmk8.png)
 
 ## Command
 A Command to set the Durability, using the Item ID or a Tag
