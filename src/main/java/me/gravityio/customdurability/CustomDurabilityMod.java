@@ -5,13 +5,11 @@ import me.gravityio.customdurability.mixins.impl.BaseDurabilityAccessor;
 import me.gravityio.customdurability.mixins.inter.DamageItem;
 import me.gravityio.customdurability.network.SyncPacket;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
-import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -37,8 +35,6 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
 
     public static CustomDurabilityMod INSTANCE;
     public static MinecraftServer SERVER = null;
-    // Whether to allow changing the durability of items when the config changes
-    public static boolean ALLOW_REGISTRY_MOD = false;
 
     public static void DEBUG(String message, Object... objects) {
         if (!IS_DEBUG) return;
@@ -53,8 +49,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
         IS_DEBUG = FabricLoader.getInstance().isDevelopmentEnvironment();
 
         MixinExtrasBootstrap.init();
-        ModConfig.GSON.load();
-        ModConfig.INSTANCE = ModConfig.GSON.getConfig();
+        ModConfig.INSTANCE.load();
     }
 
     @Override
@@ -64,19 +59,16 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
             DEBUG("[CustomDurabilityMod] Server Started");
             CustomDurabilityMod.SERVER = server;
-            CustomDurabilityMod.ALLOW_REGISTRY_MOD = true;
             this.updateRegistry();
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             DEBUG("[CustomDurabilityMod] Server Stopped");
             CustomDurabilityMod.SERVER = null;
-            CustomDurabilityMod.ALLOW_REGISTRY_MOD = false;
         });
 
         // When the durability is changed in our config, we update the items with the new durabilities and send the new registry to all players
         ModEvents.ON_DURABILITY_CHANGED.register(() -> {
-            if (!CustomDurabilityMod.ALLOW_REGISTRY_MOD) return;
             this.updateRegistry();
             DEBUG("[CustomDurabilityMod] Durability Registry Changed Sending Sync Packet to All Players!");
             CustomDurabilityMod.SERVER.getPlayerManager().getPlayerList().forEach(player ->

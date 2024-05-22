@@ -30,10 +30,18 @@ modrinth {
 repositories {
     mavenLocal()
     maven { url = "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url = "https://maven.quiltmc.org/repository/release" }
     maven { url = "https://maven.terraformersmc.com/" } // Mod Menu
     maven {
         name 'Xander Maven'
         url 'https://maven.isxander.dev/releases'
+    }
+    maven {
+        url = "https://api.modrinth.com/maven"
+        name = "Modrinth"
+        content {
+            includeGroup("maven.modrinth")
+        }
     }
     maven { url = "https://jitpack.io"	}
 }
@@ -42,10 +50,6 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_version"
     // Mod Menu
     modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
-    // YACL
-    modImplementation "dev.isxander.yacl:yet-another-config-lib-fabric:$project.yacl_version"
-    // My Library currently hosted locally, but is on my github
-    include modApi("me.gravityio.goodlib:glib-yacl-utils:$project.glib_version")
 
     // Mixin Extras
     implementation("com.github.LlamaLad7:MixinExtras:0.1.1")

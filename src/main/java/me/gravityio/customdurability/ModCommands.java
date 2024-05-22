@@ -44,7 +44,7 @@ public class ModCommands {
             } else {
                 text = Text.translatable("commands.customdurability.armor_multiplier.off");
             }
-            source.sendFeedback(text, false);
+            source.sendFeedback(() -> text, false);
             return 1;
         });
 
@@ -53,14 +53,14 @@ public class ModCommands {
             var source = context.getSource();
             var onOff = BoolArgumentType.getBool(context, "onOff");
             ModConfig.INSTANCE.armor_is_durability_multiplier(onOff);
-            ModConfig.GSON.save();
+            ModConfig.INSTANCE.save();
             Text text;
             if (onOff) {
                 text = Text.translatable("commands.customdurability.armor_multiplier.set.on");
             } else {
                 text = Text.translatable("commands.customdurability.armor_multiplier.set.off");
             }
-            source.sendFeedback(text, false);
+            source.sendFeedback(() -> text, false);
             return 1;
         });
 
@@ -73,8 +73,8 @@ public class ModCommands {
         clear.executes(context -> {
             ModConfig.INSTANCE.durability_overrides.clear();
             ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
-            ModConfig.GSON.save();
-            context.getSource().sendFeedback(Text.translatable("commands.customdurability.clear"), false);
+            ModConfig.INSTANCE.save();
+            context.getSource().sendFeedback(() -> Text.translatable("commands.customdurability.clear"), false);
             return 1;
         });
 
@@ -85,15 +85,15 @@ public class ModCommands {
             var str = item.asString();
 
             if (!ModConfig.INSTANCE.hasDurabilityOverride(str)) {
-                source.sendFeedback(Text.translatable("commands.customdurability.clear.not_found"), false);
+                source.sendFeedback(() -> Text.translatable("commands.customdurability.clear.not_found"), false);
                 return 1;
             }
 
             ModConfig.INSTANCE.removeDurabilityOverride(str);
             ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
-            ModConfig.GSON.save();
+            ModConfig.INSTANCE.save();
 
-            source.sendFeedback(Text.translatable("commands.customdurability.clear.remove", str), false);
+            source.sendFeedback(() -> Text.translatable("commands.customdurability.clear.remove", str), false);
             return 1;
 
         });
@@ -116,9 +116,9 @@ public class ModCommands {
 
             ModConfig.INSTANCE.setDurabilityOverride(str, durability);
             ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
-            ModConfig.GSON.save();
+            ModConfig.INSTANCE.save();
 
-            source.sendFeedback(Text.translatable("commands.customdurability.set", str, durability), false);
+            source.sendFeedback(() -> Text.translatable("commands.customdurability.set", str, durability), false);
             return 1;
         });
 
@@ -133,13 +133,13 @@ public class ModCommands {
         list.executes(context -> {
             var source = context.getSource();
             if (ModConfig.INSTANCE.durability_overrides.isEmpty()) {
-                source.sendFeedback(Text.translatable("commands.customdurability.list.none"), false);
+                source.sendFeedback(() -> Text.translatable("commands.customdurability.list.none"), false);
 
             } else {
-                source.sendFeedback(Text.translatable("commands.customdurability.list"), false);
+                source.sendFeedback(() -> Text.translatable("commands.customdurability.list"), false);
                 for (Map.Entry<String, Integer> entry : ModConfig.INSTANCE.durability_overrides.entrySet()) {
                     Text text = Text.literal(" - '§b%s§r': %d".formatted(entry.getKey(), entry.getValue()));
-                    source.sendFeedback(text, false);
+                    source.sendFeedback(() -> text, false);
                 }
 
             }

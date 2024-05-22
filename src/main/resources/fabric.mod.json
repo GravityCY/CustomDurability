@@ -24,18 +24,14 @@
     ],
     "client":[
       "me.gravityio.customdurability.client.CustomDurabilityClientMod"
-    ],
-    "modmenu": [
-      "me.gravityio.customdurability.compat.ModMenuApiImpl"
     ]
   },
   "mixins": [
     "customdurability.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=${loader_version}",
-    "minecraft": "${minecraft_version}",
-    "yet_another_config_lib_v3": "*",
+    "fabricloader": "*",
+    "minecraft": "1.20.x",
     "java": ">=17"
   }
 }
