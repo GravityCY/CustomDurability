@@ -26,6 +26,7 @@
       "me.gravityio.customdurability.client.CustomDurabilityClientMod"
     ]
   },
+  "accessWidener": "customdurability.accesswidener",
   "mixins": [
     "customdurability.mixins.json"
   ],
