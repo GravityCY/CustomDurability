@@ -16,20 +16,20 @@ import java.util.Map;
 public class ModCommands {
 
     public static LiteralArgumentBuilder<ServerCommandSource> doBuild(CommandRegistryAccess registry, CommandManager.RegistrationEnvironment environment) {
-        var customdurability = CommandManager.literal("customdurability");
-        customdurability.requires(source -> source.hasPermissionLevel(4));
+        var cd = CommandManager.literal("cd");
+        cd.requires(source -> source.hasPermissionLevel(4));
 
         var armorMultiplier = doBuildArmorMultiplier();
         var list = doBuildList();
         var clear = doBuildClear();
         var set = doBuildSet();
 
-        customdurability
+        cd
                 .then(armorMultiplier)
                 .then(list)
                 .then(clear)
                 .then(set);
-        return customdurability;
+        return cd;
 
     }
 
@@ -102,7 +102,6 @@ public class ModCommands {
         return clear;
 
     }
-
 
     private static LiteralArgumentBuilder<ServerCommandSource> doBuildSet() {
         var set = CommandManager.literal("set");
