@@ -16,21 +16,7 @@ public class ModEvents {
         }
     });
 
-    /**
-     * After the server sends the tags sync packet
-     */
-    public static final Event<OnAfterSyncDatapack> ON_AFTER_SYNC_DATAPACK = EventFactory.createArrayBacked(OnAfterSyncDatapack.class,
-    (listeners) -> (ServerPlayerEntity player) -> {
-        for (OnAfterSyncDatapack listener : listeners) {
-            listener.onAfterSyncDatapack(player);
-        }
-    });
-
     public interface DurabilityChangeEvent {
         void onChanged();
-    }
-
-    public interface OnAfterSyncDatapack {
-        void onAfterSyncDatapack(ServerPlayerEntity player);
     }
 }

@@ -70,14 +70,14 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
         // When the durability is changed in our config, we update the items with the new durabilities and send the new registry to all players
         ModEvents.ON_DURABILITY_CHANGED.register(() -> {
             this.updateRegistry();
-            DEBUG("[CustomDurabilityMod] Durability Registry Changed Sending Sync Packet to All Players!");
+            DEBUG("[CustomDurabilityMod] Durability registry changed sending Sync Packet to all players!");
             CustomDurabilityMod.SERVER.getPlayerManager().getPlayerList().forEach(player ->
-                    ServerPlayNetworking.send(player, new SyncPacket()));
+                    ServerPlayNetworking.send(player, new SyncPacket(DurabilityRegistry.getDurabilityOverrides())));
         });
 
-        ModEvents.ON_AFTER_SYNC_DATAPACK.register((player) -> {
-            DEBUG("[CustomDurabilityMod] {} joined the server! Sending Sync Packet", player.getName());
-            ServerPlayNetworking.send(player, new SyncPacket());
+        ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> {
+            DEBUG("[CustomDurabilityMod] {} joined the server, sending Sync Packet!", player.getName().getString());
+            ServerPlayNetworking.send(player, new SyncPacket(DurabilityRegistry.getDurabilityOverrides()));
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->

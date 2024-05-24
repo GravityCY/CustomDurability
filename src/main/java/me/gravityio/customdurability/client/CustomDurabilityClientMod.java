@@ -1,7 +1,6 @@
 package me.gravityio.customdurability.client;
 
 import me.gravityio.customdurability.CustomDurabilityMod;
-import me.gravityio.customdurability.DurabilityRegistry;
 import me.gravityio.customdurability.network.SyncPacket;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -13,8 +12,8 @@ public class CustomDurabilityClientMod implements ClientModInitializer {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayNetworking.registerGlobalReceiver(SyncPacket.TYPE, (packet, player, responseSender) -> {
             if (client.isIntegratedServerRunning()) return;
-            CustomDurabilityMod.DEBUG("[CustomDurabilityClientMod] Applying Sync Packet!");
-            var removed = DurabilityRegistry.fromPacket(packet.buf);
+            CustomDurabilityMod.DEBUG("[CustomDurabilityClientMod] Received Sync Packet from Server.");
+            var removed = packet.apply();
             CustomDurabilityMod.INSTANCE.updateItems(removed);
         });
     }
