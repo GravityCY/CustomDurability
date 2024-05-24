@@ -45,9 +45,10 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     def mainFile = upload(1023420, remapJar)
     mainFile.changelog = changelog
     mainFile.addGameVersion("1.20.2")
-    mainFile.displayName = "CustomDurability ${mod_version}"
+    mainFile.displayName = "${mod_name} ${mod_version}"
     mainFile.addModLoader("Fabric")
     mainFile.releaseType = "release"
+    mainFile.addJavaVersion(17);
     def fabricApi = "fabric-api"
     mainFile.addRequirement(fabricApi)
 }
