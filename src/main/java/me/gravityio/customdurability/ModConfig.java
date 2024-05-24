@@ -91,19 +91,23 @@ public class ModConfig {
 
     public void save() {
         try {
-            Files.writeString(PATH, GSON.toJson(this), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            Files.writeString(PATH, GSON.toJson(this), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+            CustomDurabilityMod.LOGGER.info("Saved config successfully.");
         } catch (IOException e) {
-            throw new RuntimeException();
+            CustomDurabilityMod.LOGGER.error("Failed to save config: {}", e.getMessage());
         }
     }
 
     public void load() {
-        try {
-            var other = GSON.fromJson(new FileReader(PATH.toFile()), ModConfig.class);
+        try(var fr = new FileReader(PATH.toFile())) {
+            var other = GSON.fromJson(fr, ModConfig.class);
             this.armor_is_durability_multiplier = other.armor_is_durability_multiplier;
             this.durability_overrides = other.durability_overrides;
+            System.out.println("Loaded config successfully.");
         } catch (FileNotFoundException e) {
             this.save();
-        } catch (JsonSyntaxException ignored) {}
+        } catch (JsonSyntaxException | IOException e) {
+            CustomDurabilityMod.LOGGER.error("Failed to load config: {}", e.getMessage());
+        }
     }
 }
