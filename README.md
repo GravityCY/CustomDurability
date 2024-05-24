@@ -1,7 +1,7 @@
-# 💪 Custom Durability
+#  Custom Durability
 A Fabric Mod that allows for changing the durabilities of all items.
 
-# 🌐 Overview
+# Overview
 Change any item's durability with a Command!
 
 Should work on Integrated Servers and Dedicated Servers.\
@@ -13,16 +13,16 @@ Need on Client: ✅  Need on Server: ✅
 ![Sample](https://i.imgur.com/EcObE6G.png)
 
 ## Command
-A Command to set the Durability, using the Item ID or a Tag
-+ `/customdurability armorMultiplier <True or False>`
-+ `/customdurability clear <Optional Item ID>`
-+ `/customdurability list`
-+ `/customdurability set <Item ID or Item Tag> <Durability>`
+A Command to set the durability, using the Item ID or a Tag
++ `/cd armorMultiplier <True or False>`
++ `/cd clear <Optional Item ID>`
++ `/cd list`
++ `/cd set <Item ID or Item Tag> <Durability>`
 
 Setting a diamond pickaxe's durability to 5000:\
-`/customdurability set diamond_pickaxe 5000`
+`/cd set diamond_pickaxe 5000`
 Setting all diamond tools durability to 5000:\
-`/customdurability set #customdurability:tools/diamond 5000`
+`/cd set #customdurability:tools/diamond 5000`
 
 ***To see all the tags this mod adds scroll down***
 
