@@ -44,7 +44,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 
     def mainFile = upload(1023420, remapJar)
     mainFile.changelog = changelog
-    mainFile.addGameVersion("1.20")
+    mainFile.addGameVersion("1.20", "1.21")
     mainFile.displayName = "View Bobbing Options ${mod_version}"
     mainFile.addModLoader("Fabric")
     mainFile.releaseType = "release"
@@ -59,7 +59,7 @@ modrinth {
     versionNumber = project.mod_version
     versionType = "release"
     uploadFile = remapJar
-    gameVersions = ["1.20"]
+    gameVersions = ["1.20", "1.21"]
     loaders = ["fabric"]
     dependencies {
         required.project "fabric-api"
