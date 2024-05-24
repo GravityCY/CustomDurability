@@ -2,43 +2,43 @@ package me.gravityio.customdurability.network;
 
 import me.gravityio.customdurability.CustomDurabilityMod;
 import me.gravityio.customdurability.DurabilityRegistry;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A Packet to synchronize the server and the client with their materials and durabilities
  */
-public class SyncPacket implements FabricPacket {
-    public static PacketType<SyncPacket> TYPE = PacketType.create(new Identifier(CustomDurabilityMod.MOD_ID, "material_sync"), SyncPacket::new);
-    private final LinkedHashMap<String, Integer> map;
+public class SyncPayload implements CustomPayload {
+    public static Id<SyncPayload> ID = CustomPayload.id(CustomDurabilityMod.MOD_ID + ":" + "material_sync");
+    public static final PacketCodec<PacketByteBuf, SyncPayload> CODEC = PacketCodec.of(SyncPayload::write, SyncPayload::new);
+    private final Map<String, Integer> map;
 
-    public SyncPacket(LinkedHashMap<String, Integer> map) {
+    public SyncPayload(LinkedHashMap<String, Integer> map) {
         this.map = map;
     }
 
-    public SyncPacket(PacketByteBuf buf) {
+    public SyncPayload(PacketByteBuf buf) {
         CustomDurabilityMod.DEBUG("[CustomDurabilityClientMod] Creating Sync Packet on Client.");
         var map = buf.readMap(PacketByteBuf::readString, PacketByteBuf::readInt);
         this.map = new LinkedHashMap<>();
         this.map.putAll(map);
     }
 
-    @Override
     public void write(PacketByteBuf buf) {
         buf.writeMap(DurabilityRegistry.getDurabilityOverrides(), PacketByteBuf::writeString, PacketByteBuf::writeInt);
     }
 
-    @Override
-    public PacketType<?> getType() {
-        return TYPE;
-    }
-
     public List<String> apply() {
         return DurabilityRegistry.setFrom(this.map);
+    }
+
+    @Override
+    public Id<? extends CustomPayload> getId() {
+        return ID;
     }
 }

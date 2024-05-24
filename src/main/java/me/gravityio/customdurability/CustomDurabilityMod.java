@@ -1,15 +1,17 @@
 package me.gravityio.customdurability;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
-import me.gravityio.customdurability.mixins.impl.BaseDurabilityAccessor;
 import me.gravityio.customdurability.mixins.inter.DamageItem;
-import me.gravityio.customdurability.network.SyncPacket;
+import me.gravityio.customdurability.network.SyncPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -54,6 +56,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
 
     @Override
     public void onInitialize() {
+        PayloadTypeRegistry.playS2C().register(SyncPayload.ID, SyncPayload.CODEC);
 
         // When the server starts we update the registry with the durabilities
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
@@ -72,12 +75,13 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
             this.updateRegistry();
             LOGGER.info("[CustomDurabilityMod] Durability registry changed sending Sync Packet to all players!");
             CustomDurabilityMod.SERVER.getPlayerManager().getPlayerList().forEach(player ->
-                    ServerPlayNetworking.send(player, new SyncPacket(DurabilityRegistry.getDurabilityOverrides())));
+                    ServerPlayNetworking.send(player, new SyncPayload(DurabilityRegistry.getDurabilityOverrides())));
         });
+
 
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> {
             LOGGER.info("[CustomDurabilityMod] {} joined the server, sending Sync Packet!", player.getName().getString());
-            ServerPlayNetworking.send(player, new SyncPacket(DurabilityRegistry.getDurabilityOverrides()));
+            ServerPlayNetworking.send(player, new SyncPayload(DurabilityRegistry.getDurabilityOverrides()));
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->
@@ -101,6 +105,8 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
     // When our registry changes we update the items with the new durabilities
     public void onDurabilityChanged(String itemIdOrTag, int newDurability) {
         for (Item item : this.getItemsByIdOrTag(itemIdOrTag)) {
+            if (!item.getComponents().contains(DataComponentTypes.MAX_DAMAGE)) continue;
+
             if (newDurability <= 0) {
                 this.setOriginalDamage(item);
             } else {
@@ -111,6 +117,8 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
 
     public void onResetDurability(String itemIdOrTag) {
         for (Item item : getItemsByIdOrTag(itemIdOrTag)) {
+            if (!item.getComponents().contains(DataComponentTypes.MAX_DAMAGE)) continue;
+
             this.setOriginalDamage(item);
         }
     }
@@ -119,22 +127,23 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
         var damageItem = (DamageItem) item;
         var originalDamage = damageItem.customDurability$getOriginalMaxDamage();
         DEBUG("[CustomDurabilityMod] Setting original durability of {} to {}", item, originalDamage);
-        this.setMaxDamageRaw(damageItem, originalDamage);
+        this.setMaxDamageRaw(item, originalDamage);
     }
 
     public void setMaxDamage(Item item, int newMaxDamage) {
-        var damageItem = (DamageItem) item;
-        if (damageItem instanceof ArmorItem armor && ModConfig.INSTANCE.armor_is_durability_multiplier)
-            newMaxDamage = BaseDurabilityAccessor.BASE_DURABILITY().get(armor.getType()) * newMaxDamage;
-        setMaxDamageRaw(damageItem, newMaxDamage);
+        if (item instanceof ArmorItem armor && ModConfig.INSTANCE.armor_is_durability_multiplier)
+            newMaxDamage = armor.getType().getMaxDamage(newMaxDamage);
+        setMaxDamageRaw(item, newMaxDamage);
     }
 
-    public void setMaxDamageRaw(DamageItem damageItem, int newMaxDamage) {
-        DEBUG("[CustomDurabilityMod] Updating durability of {} to {}", damageItem, newMaxDamage);
-        if (damageItem.customDurability$getOriginalMaxDamage() == null) {
-            damageItem.customDurability$setOriginalMaxDamage(damageItem.customDurability$getMaxDamage());
+    public void setMaxDamageRaw(Item item, int newMaxDamage) {
+        DEBUG("[CustomDurabilityMod] Updating durability of {} to {}", item, newMaxDamage);
+        var components = (ComponentMap.Builder.SimpleComponentMap) item.getComponents();
+        DamageItem dItem = (DamageItem) item;
+        if (dItem.customDurability$getOriginalMaxDamage() == null) {
+            dItem.customDurability$setOriginalMaxDamage(item.getComponents().get(DataComponentTypes.MAX_DAMAGE));
         }
-        damageItem.customDurability$setMaxDamage(newMaxDamage);
+        components.map().put(DataComponentTypes.MAX_DAMAGE, newMaxDamage);
     }
 
     public boolean isTag(String id){

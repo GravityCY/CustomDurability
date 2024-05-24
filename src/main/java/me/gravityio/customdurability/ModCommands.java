@@ -24,8 +24,7 @@ public class ModCommands {
         var clear = doBuildClear();
         var set = doBuildSet();
 
-        cd
-                .then(armorMultiplier)
+        cd.then(armorMultiplier)
                 .then(list)
                 .then(clear)
                 .then(set);
