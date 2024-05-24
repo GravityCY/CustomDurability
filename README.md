@@ -2,22 +2,15 @@
 A Fabric Mod that allows for changing the durabilities of all items.
 
 # 🌐 Overview
-Change any item's durability using the Config Screen or with a Command!\
+Change any item's durability with a Command!
 
 Should work on Integrated Servers and Dedicated Servers.\
-Requires [YACL](https://modrinth.com/mod/yacl), [FAPI](https://modrinth.com/mod/fabric-api), and optionally [Mod Menu](https://modrinth.com/mod/modmenu) (for the config screen)\
+Requires [FAPI](${fabric_api_url})\
 Need on Client: ✅  Need on Server: ✅
 
 **Haven't tested modded items, I'm mainly just targetting this mod for Vanilla, since it's what I wanted... it probably? should? work with modded items?**
 
 ![Sample](https://i.imgur.com/EcObE6G.png)
-
-## 🔧 Config Screen
-Currently the way you declare an item's durability through the config screen is by
-typing it's id (or item tag) and then the durability with a comma `,` in between them. \
-Eg. `minecraft:wooden_pickaxe,100` or `wooden_pickaxe,100`
-
-![Config Screen](https://i.imgur.com/3evlmk8.png)
 
 ## Command
 A Command to set the Durability, using the Item ID or a Tag
@@ -49,14 +42,14 @@ your inputted durability, so if you put 5 for boot armor, it would get multiplie
 ## 🕮 Helpful Tags
 I added some tags that should help with some of the more common items:
 
-* `#customdurability:tools`
+* `#cd:tools`
   * `wood`
   * `stone`
   * `iron`
   * `gold`
   * `diamond`
   * `netherite`
-* `#customdurability:armor`
+* `#cd:armor`
   * `leather`
   * `chainmail`
   * `iron`
@@ -65,5 +58,5 @@ I added some tags that should help with some of the more common items:
   * `netherite`
 
 You'd use these by for example doing:
-* For Wooden Tools: `#customdurability:tools/wood`
-* For Leather Armor: `#customdurability:armor/leather`
+* For Wooden Tools: `#cd:tools/wood`
+* For Leather Armor: `#cd:armor/leather`

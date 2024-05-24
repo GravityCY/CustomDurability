@@ -1,8 +1,13 @@
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
+
 plugins {
     id "fabric-loom" version "1.3-SNAPSHOT"
     id "maven-publish"
     id "com.modrinth.minotaur" version "2.+"
+    id 'net.darkhax.curseforgegradle' version '1.1.23'
 }
+
+def changelog = file("CHANGELOG.md").text
 
 version = project.mod_version
 group = "me.gravityio"
@@ -11,6 +16,42 @@ project.dependencies.add("minecraft", "com.mojang:minecraft:${project.minecraft_
 project.dependencies.add("mappings", "net.fabricmc:yarn:${project.project.yarn_version}:v2")
 project.dependencies.add("modImplementation", "net.fabricmc:fabric-loader:${project.loader_version}")
 
+tasks.register("readme") {
+    group = "documentation"
+
+    def input = file("README.md")
+
+    def cf = file("READMECF.md");
+    cf.write(input.getText("UTF-8").replace('${fabric_api_url}', "https://www.curseforge.com/minecraft/mc-mods/fabric-api"), "UTF-8")
+
+    def mr = file("READMEMR.md");
+    mr.write(input.getText("UTF-8").replace('${fabric_api_url}', "https://www.modrinth.com/mod/fabric-api"), "UTF-8")
+}
+
+tasks.register('publishMod') {
+    group = "publishing"
+
+    dependsOn "publishCurseForge"
+    dependsOn "modrinth"
+}
+
+
+tasks.register('publishCurseForge', TaskPublishCurseForge) {
+    disableVersionDetection()
+
+    group = "publishing"
+    apiToken = System.getenv("CURSEFORGE_UPLOAD");
+
+    def mainFile = upload(1023420, remapJar)
+    mainFile.changelog = changelog
+    mainFile.addGameVersion("1.20")
+    mainFile.displayName = "View Bobbing Options ${mod_version}"
+    mainFile.addModLoader("Fabric")
+    mainFile.releaseType = "release"
+    def fabricApi = "fabric-api"
+    mainFile.addRequirement(fabricApi)
+}
+
 modrinth {
     token = System.getenv("MODRINTH_UPLOAD")
     projectId = project.mod_id
@@ -18,24 +59,15 @@ modrinth {
     versionNumber = project.mod_version
     versionType = "release"
     uploadFile = remapJar
-    gameVersions = ["1.19.4"]
+    gameVersions = ["1.20"]
     loaders = ["fabric"]
     dependencies {
         required.project "fabric-api"
-        required.project "yacl"
-        optional.project "modmenu"
     }
 }
 
 repositories {
     mavenLocal()
-    maven { url = "https://oss.sonatype.org/content/repositories/snapshots" }
-    maven { url = "https://maven.quiltmc.org/repository/release" }
-    maven { url = "https://maven.terraformersmc.com/" } // Mod Menu
-    maven {
-        name 'Xander Maven'
-        url 'https://maven.isxander.dev/releases'
-    }
     maven {
         url = "https://api.modrinth.com/maven"
         name = "Modrinth"
@@ -48,10 +80,8 @@ repositories {
 
 dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_version"
-    // Mod Menu
-    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-    // Mixin Extras
+    // Mixin Extrass
     implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
     annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
     include("com.github.LlamaLad7:MixinExtras:0.1.1")
