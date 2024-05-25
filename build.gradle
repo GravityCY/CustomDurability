@@ -44,11 +44,11 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 
     def mainFile = upload(1023420, remapJar)
     mainFile.changelog = changelog
-    mainFile.addGameVersion("1.20.5")
+    mainFile.addGameVersion("1.20.5", "1.20.6")
     mainFile.displayName = "${mod_name} ${mod_version}"
     mainFile.addModLoader("Fabric")
     mainFile.releaseType = "release"
-    mainFile.addJavaVersion(17);
+    mainFile.addJavaVersion(21);
     def fabricApi = "fabric-api"
     mainFile.addRequirement(fabricApi)
 }
@@ -60,7 +60,7 @@ modrinth {
     versionNumber = project.mod_version
     versionType = "release"
     uploadFile = remapJar
-    gameVersions = ["1.20.5"]
+    gameVersions = ["1.20.5", "1.20.6"]
     loaders = ["fabric"]
     dependencies {
         required.project "fabric-api"
