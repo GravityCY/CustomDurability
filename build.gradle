@@ -7,7 +7,7 @@ plugins {
     id 'net.darkhax.curseforgegradle' version '1.1.23'
 }
 
-def changelog = file("CHANGELOG.md").text
+def cl = file("CHANGELOG.md").text
 
 version = project.mod_version
 group = "me.gravityio"
@@ -42,7 +42,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     apiToken = System.getenv("CURSEFORGE_UPLOAD");
 
     def mainFile = upload(1023420, remapJar)
-    mainFile.changelog = changelog
+    mainFile.changelog = cl
     mainFile.addGameVersion("1.20.5", "1.20.6")
     mainFile.displayName = "${mod_name} ${mod_version}"
     mainFile.addModLoader("Fabric")
@@ -57,6 +57,7 @@ modrinth {
     projectId = project.mod_id
     versionName = project.mod_name + " " + project.mod_version
     versionNumber = project.mod_version
+    changelog = cl
     versionType = "release"
     uploadFile = remapJar
     gameVersions = ["1.20.5", "1.20.6"]
