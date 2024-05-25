@@ -8,8 +8,6 @@
     "ItemMixin",
     "SyncDatapackMixin"
   ],
-  "client": [
-  ],
   "injectors": {
     "defaultRequire": 1
   }

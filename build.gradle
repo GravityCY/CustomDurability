@@ -35,7 +35,6 @@ tasks.register('publishMod') {
     dependsOn "modrinth"
 }
 
-
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
     disableVersionDetection()
 
@@ -48,7 +47,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     mainFile.displayName = "${mod_name} ${mod_version}"
     mainFile.addModLoader("Fabric")
     mainFile.releaseType = "release"
-    mainFile.addJavaVersion(17);
+    mainFile.addJavaVersion("Java 17");
     def fabricApi = "fabric-api"
     mainFile.addRequirement(fabricApi)
 }
