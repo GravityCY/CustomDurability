@@ -103,7 +103,7 @@ public class ModConfig {
             var other = GSON.fromJson(fr, ModConfig.class);
             this.armor_is_durability_multiplier = other.armor_is_durability_multiplier;
             this.durability_overrides = other.durability_overrides;
-            System.out.println("Loaded config successfully.");
+            CustomDurabilityMod.LOGGER.info("Loaded config successfully.");
         } catch (FileNotFoundException e) {
             this.save();
         } catch (JsonSyntaxException | IOException e) {
