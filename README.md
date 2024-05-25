@@ -21,12 +21,13 @@ A Command to set the durability, using the Item ID or a Tag
 
 Setting a diamond pickaxe's durability to 5000:\
 `/cd set diamond_pickaxe 5000`
+
 Setting all diamond tools durability to 5000:\
-`/cd set #customdurability:tools/diamond 5000`
+`/cd set #cd:tools/diamond 5000`
 
 ***To see all the tags this mod adds scroll down***
 
-![Command](https://i.imgur.com/MDsbjTj.png)
+![Command](https://i.ibb.co/XywmG4g/java-Ow-MKk-Vifb8.png)
 
 ## ✖ Armor Multiplier
 The Armor Multiplier option is so that you can use a base vanilla value that will multiply
