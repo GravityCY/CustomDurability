@@ -4,9 +4,10 @@ A Fabric Mod that allows for changing the durabilities of all items.
 # Overview
 Change any item's durability with a Command!
 
-Should work on Integrated Servers and Dedicated Servers.\
-Requires [FAPI](${fabric_api_url})\
-Need on Client: ✅  Need on Server: ✅
+**Should work on Integrated Servers and Dedicated Servers.**\
+**Requires [FAPI](${fabric})**\
+**Need on Client: ✅  Need on Server: ✅**\
+**Report any Issues on [GitHub](https://github.com/GravityCY/CustomDurability/issues) or my [Discord Server](https://discord.gg/k6SEKxDbpF)**
 
 **Haven't tested modded items, I'm mainly just targetting this mod for Vanilla, since it's what I wanted... it probably? should? work with modded items?**
 

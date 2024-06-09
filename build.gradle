@@ -5,27 +5,45 @@ plugins {
     id "maven-publish"
     id "com.modrinth.minotaur" version "2.+"
     id 'net.darkhax.curseforgegradle' version '1.1.23'
+    id "me.gravityio.replacementplugin" version "0.0.7" // my local experimental plugin, just delete if you fork
 }
 
-def cl = file("CHANGELOG.md").text
+def cl = "Update!"
 
 version = project.mod_version
 group = "me.gravityio"
+
+repositories {
+    mavenLocal()
+    maven {
+        url = "https://api.modrinth.com/maven"
+        name = "Modrinth"
+        content {
+            includeGroup("maven.modrinth")
+        }
+    }
+    maven { url = "https://jitpack.io"	}
+}
 
 project.dependencies.add("minecraft", "com.mojang:minecraft:${project.minecraft_version}")
 project.dependencies.add("mappings", "net.fabricmc:yarn:${project.project.yarn_version}:v2")
 project.dependencies.add("modImplementation", "net.fabricmc:fabric-loader:${project.loader_version}")
 
-tasks.register("readme") {
-    group = "documentation"
+dependencies {
+    modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_version"
 
-    def input = file("README.md")
+    // Mixin Extras
+    implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
+    annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
+    include("com.github.LlamaLad7:MixinExtras:0.1.1")
+}
 
-    def cf = file("READMECF.md");
-    cf.write(input.getText("UTF-8").replace('${fabric_api_url}', "https://www.curseforge.com/minecraft/mc-mods/fabric-api"), "UTF-8")
-
-    def mr = file("READMEMR.md");
-    mr.write(input.getText("UTF-8").replace('${fabric_api_url}', "https://www.modrinth.com/mod/fabric-api"), "UTF-8")
+replacement {
+    fileName = "README.md"
+    types = ["modrinth", "curseforge"]
+    values = [
+            "fabric": ["https://modrinth.com/mod/fabric-api", "https://curseforge.com/minecraft/mc-mods/fabric-api"]
+    ]
 }
 
 tasks.register('publishMod') {
@@ -69,27 +87,6 @@ modrinth {
 
 loom {
     accessWidenerPath = file("src/main/resources/customdurability.accesswidener")
-}
-
-repositories {
-    mavenLocal()
-    maven {
-        url = "https://api.modrinth.com/maven"
-        name = "Modrinth"
-        content {
-            includeGroup("maven.modrinth")
-        }
-    }
-    maven { url = "https://jitpack.io"	}
-}
-
-dependencies {
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_version"
-
-    // Mixin Extras
-    implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
-    annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
-    include("com.github.LlamaLad7:MixinExtras:0.1.1")
 }
 
 base {
