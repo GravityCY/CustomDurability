@@ -61,7 +61,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 
     def mainFile = upload(1023420, remapJar)
     mainFile.changelog = cl
-    mainFile.addGameVersion("1.20.5", "1.20.6")
+    mainFile.addGameVersion("1.21")
     mainFile.displayName = "${mod_name} ${mod_version}"
     mainFile.addModLoader("Fabric")
     mainFile.releaseType = "release"
@@ -78,7 +78,7 @@ modrinth {
     changelog = cl
     versionType = "release"
     uploadFile = remapJar
-    gameVersions = ["1.20.5", "1.20.6"]
+    gameVersions = ["1.21"]
     loaders = ["fabric"]
     dependencies {
         required.project "fabric-api"

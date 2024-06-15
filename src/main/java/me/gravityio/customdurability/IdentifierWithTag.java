@@ -17,9 +17,9 @@ public class IdentifierWithTag {
     public IdentifierWithTag(String key) {
         this.isTag = key.charAt(0) == '#';
         if (this.isTag) {
-            this.id = new Identifier(key.substring(1));
+            this.id = Identifier.of(key.substring(1));
         } else {
-            this.id = new Identifier(key);
+            this.id = Identifier.of(key);
         }
     }
 

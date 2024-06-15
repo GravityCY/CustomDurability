@@ -80,7 +80,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
 
 
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> {
-            LOGGER.info("[CustomDurabilityMod] {} joined the server, sending Sync Packet!", player.getName().getString());
+            LOGGER.info("[CustomDurabilityMod] Syncing packets for player '{}', sending Sync Packet!", player.getName().getString());
             ServerPlayNetworking.send(player, new SyncPayload(DurabilityRegistry.getDurabilityOverrides()));
         });
 
@@ -153,7 +153,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
     public TagKey<Item> getTag(String tag) {
         if (!this.isTag(tag)) return null;
         var idString = tag.substring(1);
-        var id = new Identifier(idString);
+        var id = Identifier.of(idString);
         return TagKey.of(RegistryKeys.ITEM, id);
     }
 
@@ -172,7 +172,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
                 DEBUG("[CustomDurabilityMod] No items under tag {} exist!", tag);
             }
         } else {
-            items.add(Registries.ITEM.get(new Identifier(idOrTag)));
+            items.add(Registries.ITEM.get(Identifier.of(idOrTag)));
         }
         return items;
     }
