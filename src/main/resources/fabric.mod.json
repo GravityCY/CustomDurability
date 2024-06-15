@@ -12,7 +12,7 @@
     "issues": "${mod_sources}"
   },
   "license": "${mod_license}",
-  "icon": "assets/customdurability/icon.png",
+  "icon": "assets/${mod_id}/icon.png",
 
   "environment": "*",
   "entrypoints": {
@@ -32,8 +32,8 @@
   ],
   "depends": {
     "fabricloader": "*",
-    "fabric-api": "*",
+    "fabric-api": ">=${fabric_version}",
     "minecraft": ">=${minecraft_version}",
-    "java": ">=17"
+    "java": ">=21"
   }
 }

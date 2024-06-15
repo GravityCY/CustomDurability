@@ -8,7 +8,7 @@ plugins {
     id "me.gravityio.replacementplugin" version "0.0.7" // my local experimental plugin, just delete if you fork
 }
 
-def cl = "Update!"
+def cl = "- Update to 1.21!"
 
 version = project.mod_version
 group = "me.gravityio"
