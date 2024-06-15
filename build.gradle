@@ -103,7 +103,8 @@ processResources  {
             "mod_sources": project.mod_sources,
             "mod_license": project.mod_license,
             "loader_version": project.loader_version,
-            "minecraft_version": project.minecraft_version
+            "minecraft_version": project.minecraft_version,
+            "fabric_version": project.fabric_version
     ]
 
     inputs.properties(modProperties)
