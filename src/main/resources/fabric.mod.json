@@ -5,15 +5,20 @@
   "version": "${mod_version}",
   "description": "${mod_description}",
   "authors": ["${mod_author}"],
-
   "contact": {
     "homepage": "${mod_sources}",
     "sources": "${mod_sources}",
     "issues": "${mod_sources}"
   },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/Ef4Z22gnqj"
+      }
+    }
+  },
   "license": "${mod_license}",
   "icon": "assets/${mod_id}/icon.png",
-
   "environment": "*",
   "entrypoints": {
     "preLaunch": [
