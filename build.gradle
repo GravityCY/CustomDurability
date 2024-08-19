@@ -68,7 +68,6 @@ tasks.register('publishMod') {
 }
 
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
-
     disableVersionDetection()
 
     group = "publishing"

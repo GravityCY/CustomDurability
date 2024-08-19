@@ -22,8 +22,6 @@ import java.util.List;
 
 //? if >=1.20.5 {
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponents;
 //?}
 
 /**
