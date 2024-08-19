@@ -21,9 +21,6 @@
   "icon": "assets/${mod_id}/icon.png",
   "environment": "*",
   "entrypoints": {
-    "preLaunch": [
-      "me.gravityio.customdurability.CustomDurabilityMod"
-    ],
     "main": [
       "me.gravityio.customdurability.CustomDurabilityMod"
     ],
@@ -36,9 +33,9 @@
     "customdurability.mixins.json"
   ],
   "depends": {
-    "fabricloader": "*",
-    "fabric-api": ">=${fabric_version}",
-    "minecraft": ">=${minecraft_version}",
-    "java": ">=21"
+    "minecraft": "${minecraft_version_range}",
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": ">=${fabric_api_version}",
+    "java": ">=${java_version}"
   }
 }

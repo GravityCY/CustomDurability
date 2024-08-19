@@ -4,20 +4,20 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.RegistryPredicateArgumentType;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 
 import java.util.Map;
 
 public class ModCommands {
 
-    public static LiteralArgumentBuilder<ServerCommandSource> doBuild(CommandRegistryAccess registry, CommandManager.RegistrationEnvironment environment) {
-        var cd = CommandManager.literal("cd");
-        cd.requires(source -> source.hasPermissionLevel(4));
+    public static LiteralArgumentBuilder<CommandSourceStack> doBuild(CommandBuildContext registry, Commands.CommandSelection environment) {
+        var cd = Commands.literal("cd");
+        cd.requires(source -> source.hasPermission(4));
 
         var armorMultiplier = doBuildArmorMultiplier();
         var list = doBuildList();
@@ -32,34 +32,34 @@ public class ModCommands {
 
     }
 
-    private static LiteralArgumentBuilder<ServerCommandSource> doBuildArmorMultiplier() {
-        var armorMultiplier = CommandManager.literal("armorMultiplier");
+    private static LiteralArgumentBuilder<CommandSourceStack> doBuildArmorMultiplier() {
+        var armorMultiplier = Commands.literal("armorMultiplier");
 
         armorMultiplier.executes(context -> {
             var source = context.getSource();
-            Text text;
+            Component text;
             if (ModConfig.INSTANCE.armor_is_durability_multiplier) {
-                text = Text.translatable("commands.customdurability.armor_multiplier.on");
+                text = Component.translatable("commands.customdurability.armor_multiplier.on");
             } else {
-                text = Text.translatable("commands.customdurability.armor_multiplier.off");
+                text = Component.translatable("commands.customdurability.armor_multiplier.off");
             }
-            source.sendFeedback(() -> text, false);
+            source.sendSuccess(() -> text, false);
             return 1;
         });
 
-        var onOffArg = CommandManager.argument("onOff", BoolArgumentType.bool());
+        var onOffArg = Commands.argument("onOff", BoolArgumentType.bool());
         onOffArg.executes(context -> {
             var source = context.getSource();
             var onOff = BoolArgumentType.getBool(context, "onOff");
             ModConfig.INSTANCE.armor_is_durability_multiplier(onOff);
             ModConfig.INSTANCE.save();
-            Text text;
+            Component text;
             if (onOff) {
-                text = Text.translatable("commands.customdurability.armor_multiplier.set.on");
+                text = Component.translatable("commands.customdurability.armor_multiplier.set.on");
             } else {
-                text = Text.translatable("commands.customdurability.armor_multiplier.set.off");
+                text = Component.translatable("commands.customdurability.armor_multiplier.set.off");
             }
-            source.sendFeedback(() -> text, false);
+            source.sendSuccess(() -> text, false);
             return 1;
         });
 
@@ -67,24 +67,24 @@ public class ModCommands {
         return armorMultiplier;
     }
 
-    private static LiteralArgumentBuilder<ServerCommandSource> doBuildClear() {
-        var clear = CommandManager.literal("clear");
+    private static LiteralArgumentBuilder<CommandSourceStack> doBuildClear() {
+        var clear = Commands.literal("clear");
         clear.executes(context -> {
             ModConfig.INSTANCE.durability_overrides.clear();
             ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
             ModConfig.INSTANCE.save();
-            context.getSource().sendFeedback(() -> Text.translatable("commands.customdurability.clear"), false);
+            context.getSource().sendSuccess(() -> Component.translatable("commands.customdurability.clear"), false);
             return 1;
         });
 
-        var idOrTagArg = CommandManager.argument("item", RegistryPredicateArgumentType.registryPredicate(RegistryKeys.ITEM));
+        var idOrTagArg = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM));
         idOrTagArg.executes(context -> {
             var source = context.getSource();
-            var item = RegistryPredicateArgumentType.getPredicate(context, "item", RegistryKeys.ITEM, new DynamicCommandExceptionType(o -> () -> ""));
-            var str = item.asString();
+            var item = ResourceOrTagKeyArgument.getResourceOrTagKey(context, "item", Registries.ITEM, new DynamicCommandExceptionType(o -> () -> ""));
+            var str = item.asPrintable();
 
             if (!ModConfig.INSTANCE.hasDurabilityOverride(str)) {
-                source.sendFeedback(() -> Text.translatable("commands.customdurability.clear.not_found"), false);
+                source.sendSuccess(() -> Component.translatable("commands.customdurability.clear.not_found"), false);
                 return 1;
             }
 
@@ -92,7 +92,7 @@ public class ModCommands {
             ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
             ModConfig.INSTANCE.save();
 
-            source.sendFeedback(() -> Text.translatable("commands.customdurability.clear.remove", str), false);
+            source.sendSuccess(() -> Component.translatable("commands.customdurability.clear.remove", str), false);
             return 1;
 
         });
@@ -102,21 +102,21 @@ public class ModCommands {
 
     }
 
-    private static LiteralArgumentBuilder<ServerCommandSource> doBuildSet() {
-        var set = CommandManager.literal("set");
-        var idOrTagArg = CommandManager.argument("item", RegistryPredicateArgumentType.registryPredicate(RegistryKeys.ITEM));
-        var durabilityArg = CommandManager.argument("durability", IntegerArgumentType.integer());
+    private static LiteralArgumentBuilder<CommandSourceStack> doBuildSet() {
+        var set = Commands.literal("set");
+        var idOrTagArg = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM));
+        var durabilityArg = Commands.argument("durability", IntegerArgumentType.integer());
         durabilityArg.executes(context -> {
             var source = context.getSource();
-            var item = RegistryPredicateArgumentType.getPredicate(context, "item", RegistryKeys.ITEM, new DynamicCommandExceptionType(o -> Text.literal("NOT A VALID ITEM")));
+            var item = ResourceOrTagKeyArgument.getResourceOrTagKey(context, "item", Registries.ITEM, new DynamicCommandExceptionType(o -> Component.literal("NOT A VALID ITEM")));
             var durability = IntegerArgumentType.getInteger(context, "durability");
-            var str = item.asString();
+            var str = item.asPrintable();
 
             ModConfig.INSTANCE.setDurabilityOverride(str, durability);
             ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
             ModConfig.INSTANCE.save();
 
-            source.sendFeedback(() -> Text.translatable("commands.customdurability.set", str, durability), false);
+            source.sendSuccess(() -> Component.translatable("commands.customdurability.set", str, durability), false);
             return 1;
         });
 
@@ -126,18 +126,18 @@ public class ModCommands {
 
     }
 
-    private static LiteralArgumentBuilder<ServerCommandSource> doBuildList() {
-        var list = CommandManager.literal("list");
+    private static LiteralArgumentBuilder<CommandSourceStack> doBuildList() {
+        var list = Commands.literal("list");
         list.executes(context -> {
             var source = context.getSource();
             if (ModConfig.INSTANCE.durability_overrides.isEmpty()) {
-                source.sendFeedback(() -> Text.translatable("commands.customdurability.list.none"), false);
+                source.sendSuccess(() -> Component.translatable("commands.customdurability.list.none"), false);
 
             } else {
-                source.sendFeedback(() -> Text.translatable("commands.customdurability.list"), false);
+                source.sendSuccess(() -> Component.translatable("commands.customdurability.list"), false);
                 for (Map.Entry<String, Integer> entry : ModConfig.INSTANCE.durability_overrides.entrySet()) {
-                    Text text = Text.literal(" - '§b%s§r': %d".formatted(entry.getKey(), entry.getValue()));
-                    source.sendFeedback(() -> text, false);
+                    Component text = Component.literal(" - '§b%s§r': %d".formatted(entry.getKey(), entry.getValue()));
+                    source.sendSuccess(() -> text, false);
                 }
 
             }

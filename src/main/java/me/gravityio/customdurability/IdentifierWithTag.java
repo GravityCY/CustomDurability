@@ -1,15 +1,15 @@
 package me.gravityio.customdurability;
 
-import net.minecraft.command.argument.RegistryPredicateArgumentType;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 
 public class IdentifierWithTag {
-    Identifier id;
+    ResourceLocation id;
     boolean isTag;
 
-    public IdentifierWithTag(Identifier id, boolean isTag) {
+    public IdentifierWithTag(ResourceLocation id, boolean isTag) {
         this.id = id;
         this.isTag = isTag;
     }
@@ -17,9 +17,9 @@ public class IdentifierWithTag {
     public IdentifierWithTag(String key) {
         this.isTag = key.charAt(0) == '#';
         if (this.isTag) {
-            this.id = Identifier.of(key.substring(1));
+            this.id = Versioned.parseId(key.substring(1));
         } else {
-            this.id = Identifier.of(key);
+            this.id = Versioned.parseId(key);
         }
     }
 
@@ -36,9 +36,9 @@ public class IdentifierWithTag {
         return this.isTag ? "#" + str : str;
     }
 
-    public static IdentifierWithTag from(RegistryPredicateArgumentType.RegistryPredicate<?> item) {
-        boolean isTag = item.getKey().right().isPresent();
-        Identifier id = item.getKey().map(RegistryKey::getValue, TagKey::id);
+    public static IdentifierWithTag from(ResourceOrTagKeyArgument.Result<?> item) {
+        boolean isTag = item.unwrap().right().isPresent();
+        ResourceLocation id = item.unwrap().map(ResourceKey::location, TagKey::location);
         return new IdentifierWithTag(id, isTag);
     }
 }

@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;

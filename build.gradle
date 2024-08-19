@@ -2,40 +2,54 @@ import net.darkhax.curseforgegradle.TaskPublishCurseForge
 
 plugins {
     id "fabric-loom" version "1.6-SNAPSHOT"
-    id "maven-publish"
     id "com.modrinth.minotaur" version "2.+"
     id 'net.darkhax.curseforgegradle' version '1.1.23'
     id "me.gravityio.replacementplugin" version "0.0.7" // my local experimental plugin, just delete if you fork
 }
 
-def cl = "- Update to 1.21!"
-
-version = project.mod_version
+version = "$rootProject.mod_version+$project.name"
 group = "me.gravityio"
+
+def javaVersionNum = project.java_version.toInteger()
+def javaVersion = JavaVersion.toVersion(javaVersionNum)
+def nameWithVer = "$rootProject.mod_name $project.version"
+def minecraftVersions = project.minecraft_versions.split(" ").toList()
+def curseforgeId = rootProject.curseforge_id.toInteger()
+
+loom {
+    runConfigs.all {
+        ideConfigGenerated true // Run configurations are not created for subprojects by default
+        runDir "../../run" // Use a shared run folder and just create separate worlds
+    }
+    def f = file("src/main/resources/customdurability.accesswidener")
+    if (f.exists()) {
+        accessWidenerPath = f
+    }
+}
+
+base {
+    archivesName = rootProject.mod_id
+}
 
 repositories {
     mavenLocal()
     maven {
-        url = "https://api.modrinth.com/maven"
-        name = "Modrinth"
-        content {
-            includeGroup("maven.modrinth")
-        }
+        name = 'ParchmentMC'
+        url = 'https://maven.parchmentmc.org'
     }
-    maven { url = "https://jitpack.io"	}
 }
 
-project.dependencies.add("minecraft", "com.mojang:minecraft:${project.minecraft_version}")
-project.dependencies.add("mappings", "net.fabricmc:yarn:${project.project.yarn_version}:v2")
+// Default Depenendecies
+project.dependencies.add("minecraft", "com.mojang:minecraft:${project.name}")
+project.dependencies.add("mappings", loom.layered() {
+    officialMojangMappings()
+    parchment("org.parchmentmc.data:parchment-${project.parchment_version_mc}:${project.parchment_version}@zip")
+})
 project.dependencies.add("modImplementation", "net.fabricmc:fabric-loader:${project.loader_version}")
+project.dependencies.add("modImplementation", "net.fabricmc.fabric-api:fabric-api:$project.fabric_version")
 
+// Actual Dependencies
 dependencies {
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_version"
-
-    // Mixin Extras
-    implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
-    annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
-    include("com.github.LlamaLad7:MixinExtras:0.1.1")
 }
 
 replacement {
@@ -54,57 +68,57 @@ tasks.register('publishMod') {
 }
 
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
+
     disableVersionDetection()
 
     group = "publishing"
     apiToken = System.getenv("CURSEFORGE_UPLOAD");
 
-    def mainFile = upload(1023420, remapJar)
-    mainFile.changelog = cl
-    mainFile.addGameVersion("1.21")
-    mainFile.displayName = "${mod_name} ${mod_version}"
+    def mainFile = upload(curseforgeId, remapJar)
+    mainFile.changelog = rootProject.changelog
+    minecraftVersions.forEach {
+        mainFile.addGameVersion(it)
+    }
+    mainFile.displayName = nameWithVer
     mainFile.addModLoader("Fabric")
     mainFile.releaseType = "release"
-    mainFile.addJavaVersion("Java 21");
+    mainFile.addJavaVersion("Java ${javaVersionNum}");
     def fabricApi = "fabric-api"
     mainFile.addRequirement(fabricApi)
 }
 
 modrinth {
     token = System.getenv("MODRINTH_UPLOAD")
-    projectId = project.mod_id
-    versionName = project.mod_name + " " + project.mod_version
-    versionNumber = project.mod_version
-    changelog = cl
+    projectId = rootProject.modrinth_id
+    versionName = nameWithVer
+    versionNumber = project.version
+    changelog = rootProject.changelog
     versionType = "release"
     uploadFile = remapJar
-    gameVersions = ["1.21"]
+    gameVersions = minecraftVersions
     loaders = ["fabric"]
     dependencies {
         required.project "fabric-api"
     }
 }
 
-loom {
-    accessWidenerPath = file("src/main/resources/customdurability.accesswidener")
-}
-
-base {
-    archivesName = project.mod_id
-}
-
 processResources  {
     def modProperties = [
-            "mod_id": project.mod_id,
-            "mod_name": project.mod_name,
-            "mod_version": project.mod_version,
-            "mod_description": project.mod_description,
-            "mod_author": project.mod_author,
-            "mod_sources": project.mod_sources,
-            "mod_license": project.mod_license,
-            "loader_version": project.loader_version,
-            "minecraft_version": project.minecraft_version,
-            "fabric_version": project.fabric_version
+            "mod_id": rootProject.mod_id,
+            "mod_name": rootProject.mod_name,
+            "mod_version": rootProject.mod_version,
+            "mod_description": rootProject.mod_description,
+            "mod_author": rootProject.mod_author,
+            "mod_sources": rootProject.mod_sources,
+            "mod_license": rootProject.mod_license,
+            "minecraft_version_range": project.minecraft_version_range,
+            "fabric_loader_version": rootProject.loader_version,
+            "fabric_api_version": project.fabric_version,
+            "java_version": project.java_version
+    ]
+
+    def mixinProperties = [
+       "java_version": project.java_version
     ]
 
     inputs.properties(modProperties)
@@ -112,30 +126,37 @@ processResources  {
     filesMatching("fabric.mod.json") {
         expand modProperties
     }
+
+    filesMatching("customdurability.mixins.json") {
+        expand mixinProperties
+    }
+
+    if (project.name != "1.21") {
+        doLast {
+            File buildFolder = new File("$buildDir/resources/main")
+            File oldFolder = new File(buildFolder, "data/cd/tags/item")
+            File newFolder = new File(buildFolder, "data/cd/tags/items")
+
+            if (oldFolder.exists()) {
+                oldFolder.renameTo(newFolder)
+            }
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
+    it.options.release = javaVersionNum
 }
 
 java {
     withSourcesJar()
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
 }
 
 jar {
     from("LICENSE") {
         rename { "${it}_${base.archivesName.get()}" }
     }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-    repositories {}
 }

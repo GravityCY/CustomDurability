@@ -1,36 +1,36 @@
 package me.gravityio.customdurability;
 
-import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import me.gravityio.customdurability.mixins.inter.DamageItem;
 import me.gravityio.customdurability.network.SyncPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
+//? if >=1.20.5 {
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
+//?}
+
 /**
  * The entrypoint to CustomDurability<br>
  * A mod that allows to change the durability of items
  */
-public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint {
+public class CustomDurabilityMod implements ModInitializer {
     public static final String MOD_ID = "customdurability";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static boolean IS_DEBUG = false;
@@ -44,19 +44,18 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
         LOGGER.info(message, objects);
     }
 
-
-    @Override
-    public void onPreLaunch() {
-        INSTANCE = this;
-        IS_DEBUG = FabricLoader.getInstance().isDevelopmentEnvironment();
-
-        MixinExtrasBootstrap.init();
-        ModConfig.INSTANCE.load();
+    public static ResourceLocation id(String path) {
+        return Versioned.parseId(MOD_ID, path);
     }
 
     @Override
     public void onInitialize() {
-        PayloadTypeRegistry.playS2C().register(SyncPayload.ID, SyncPayload.CODEC);
+        INSTANCE = this;
+        IS_DEBUG = FabricLoader.getInstance().isDevelopmentEnvironment();
+        ModConfig.INSTANCE.load();
+        //? if >=1.20.5 {
+        PayloadTypeRegistry.playS2C().register(SyncPayload.TYPE, SyncPayload.CODEC);
+        //?}
 
         // When the server starts we update the registry with the durabilities
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
@@ -74,7 +73,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
         ModEvents.ON_DURABILITY_CHANGED.register(() -> {
             this.updateRegistry();
             LOGGER.info("[CustomDurabilityMod] Durability registry changed sending Sync Packet to all players!");
-            CustomDurabilityMod.SERVER.getPlayerManager().getPlayerList().forEach(player ->
+            CustomDurabilityMod.SERVER.getPlayerList().getPlayers().forEach(player ->
                     ServerPlayNetworking.send(player, new SyncPayload(DurabilityRegistry.getDurabilityOverrides())));
         });
 
@@ -105,7 +104,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
     // When our registry changes we update the items with the new durabilities
     public void onDurabilityChanged(String itemIdOrTag, int newDurability) {
         for (Item item : this.getItemsByIdOrTag(itemIdOrTag)) {
-            if (!item.getComponents().contains(DataComponentTypes.MAX_DAMAGE)) continue;
+            if (!Versioned.isDamageable(item)) continue;
 
             if (newDurability <= 0) {
                 this.setOriginalDamage(item);
@@ -117,7 +116,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
 
     public void onResetDurability(String itemIdOrTag) {
         for (Item item : getItemsByIdOrTag(itemIdOrTag)) {
-            if (!item.getComponents().contains(DataComponentTypes.MAX_DAMAGE)) continue;
+            if (!Versioned.isDamageable(item)) continue;
 
             this.setOriginalDamage(item);
         }
@@ -131,19 +130,15 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
     }
 
     public void setMaxDamage(Item item, int newMaxDamage) {
-        if (item instanceof ArmorItem armor && ModConfig.INSTANCE.armor_is_durability_multiplier)
-            newMaxDamage = armor.getType().getMaxDamage(newMaxDamage);
-        setMaxDamageRaw(item, newMaxDamage);
+        if (item instanceof ArmorItem armor && ModConfig.INSTANCE.armor_is_durability_multiplier) {
+            newMaxDamage = Versioned.getArmorDurability(armor, newMaxDamage);
+        }
+        this.setMaxDamageRaw(item, newMaxDamage);
     }
 
     public void setMaxDamageRaw(Item item, int newMaxDamage) {
         DEBUG("[CustomDurabilityMod] Updating durability of {} to {}", item, newMaxDamage);
-        var components = (ComponentMap.Builder.SimpleComponentMap) item.getComponents();
-        DamageItem dItem = (DamageItem) item;
-        if (dItem.customDurability$getOriginalMaxDamage() == null) {
-            dItem.customDurability$setOriginalMaxDamage(item.getComponents().get(DataComponentTypes.MAX_DAMAGE));
-        }
-        components.map().put(DataComponentTypes.MAX_DAMAGE, newMaxDamage);
+        Versioned.setDurability(item, newMaxDamage);
     }
 
     public boolean isTag(String id){
@@ -153,18 +148,18 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
     public TagKey<Item> getTag(String tag) {
         if (!this.isTag(tag)) return null;
         var idString = tag.substring(1);
-        var id = Identifier.of(idString);
-        return TagKey.of(RegistryKeys.ITEM, id);
+        var id = Versioned.parseId(idString);
+        return TagKey.create(Registries.ITEM, id);
     }
 
     public List<Item> getItemsByIdOrTag(String idOrTag) {
         List<Item> items = new ArrayList<>();
         TagKey<Item> tag = this.getTag(idOrTag);
         if (tag != null) {
-            var optEntryList = Registries.ITEM.getEntryList(tag);
+            var optEntryList = BuiltInRegistries.ITEM.getTag(tag);
             if (optEntryList.isPresent()) {
                 var entryList = optEntryList.get();
-                for (RegistryEntry<Item> itemRegistryEntry : entryList) {
+                for (var itemRegistryEntry : entryList) {
                     var item = itemRegistryEntry.value();
                     items.add(item);
                 }
@@ -172,7 +167,7 @@ public class CustomDurabilityMod implements ModInitializer, PreLaunchEntrypoint 
                 DEBUG("[CustomDurabilityMod] No items under tag {} exist!", tag);
             }
         } else {
-            items.add(Registries.ITEM.get(Identifier.of(idOrTag)));
+            items.add(BuiltInRegistries.ITEM.get(Versioned.parseId(idOrTag)));
         }
         return items;
     }
