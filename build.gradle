@@ -60,11 +60,49 @@ replacement {
     ]
 }
 
+class UploadData {
+    def version;
+    def modrinthFileId;
+    def curseFileId;
+}
+
+tasks.register("subtask-a") {
+    finalizedBy "subtask-b"
+    finalizedBy "subtask-c"
+
+    doLast {
+        println "Subtask A"
+        def data = new UploadData()
+        data.version = project.version
+        rootProject.ext.data += data
+    }
+}
+
+tasks.register("subtask-b") {
+    doLast {
+        println "Subtask B"
+        rootProject.ext.data.last.modrinthFileId = project.version
+    }
+}
+
+tasks.register("subtask-c") {
+    doLast {
+        println "Subtask C"
+        rootProject.ext.data.last.curseFileId = project.version
+    }
+}
+
 tasks.register('publishMod') {
     group = "publishing"
 
-    dependsOn "publishCurseForge"
-    dependsOn "modrinth"
+    finalizedBy "publishCurseForge"
+    finalizedBy "modrinth"
+
+    doLast {
+        def data = new UploadData()
+        data.version = project.version
+        rootProject.ext.data += data
+    }
 }
 
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
@@ -84,6 +122,10 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     mainFile.addJavaVersion("Java ${javaVersionNum}");
     def fabricApi = "fabric-api"
     mainFile.addRequirement(fabricApi)
+
+    doLast {
+        rootProject.ext.data.last.curseFileId = mainFile.curseFileId
+    }
 }
 
 modrinth {
@@ -98,6 +140,12 @@ modrinth {
     loaders = ["fabric"]
     dependencies {
         required.project "fabric-api"
+    }
+}
+
+tasks.named("modrinth").configure {
+    doLast {
+        rootProject.ext.data.last.modrinthFileId = uploadInfo.id
     }
 }
 

@@ -1,14 +1,49 @@
+plugins {
+    id "me.gravityio.discord-webhook" version "0.0.2"
+}
+
 plugins.apply "dev.kikugie.stonecutter"
 
 stonecutter.active "1.21" /* [SC] DO NOT EDIT */
+
+def secrets = new Properties()
+rootProject.file("secrets.properties").withInputStream { secrets.load(it) }
+rootProject.ext.data = []
 
 stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
     setGroup "project"
     ofTask "build"
 }
 
-stonecutter.registerChiseled tasks.register("chiseledPublish", stonecutter.chiseled) {
-    setGroup "project"
-    ofTask "publishMod"
+stonecutter.registerChiseled tasks.register("chiseledTestInternal", stonecutter.chiseled) {
+    group = "project"
+    ofTask "subtask-a"
 }
 
+discordWebhook {
+    webhook_url = secrets.get("discord_webhook_url")
+}
+
+tasks.register("chiseledTest") {
+    group = "project"
+
+    dependsOn "chiseledTestInternal"
+    finalizedBy "sendDiscordWebhook"
+
+    doLast {
+        def message = ""
+        data.forEach {
+            message += "# $rootProject.name $it.version Update ([Modrinth](https://modrinth.com/mod/customdurability/version/$it.modrinthFileId) | [Curseforge](https://curseforge/mc-mods/customdurability/files/$it.curseFileId))\n"
+        }
+        message += "$rootProject.changelog\n\n"
+        message += "As always report any issues on my [GitHub](<https://github.com/GravityCY/CustomDurability/issues>) or in https://discord.com/channels/1112046604183162961/1245461284992843946"
+        tasks.named("sendDiscordWebhook").configure {
+            content = message
+        }
+    }
+}
+
+//tasks.register("publishMods") {
+//    group = "project"
+//    dependsOn "chiseledPublish"
+//}
