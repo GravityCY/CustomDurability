@@ -71,7 +71,7 @@ public class ModConfig {
         this.durability_overrides.put(idWithTag.toShortString(), value);
     }
 
-    public void removeDurabilityOverride(String idOrTagStr) {
+    public void removeDurabilityOverrideRaw(String idOrTagStr) {
         var idWithTag = new IdentifierWithTag(idOrTagStr);
         this.removeDuplicates(idWithTag);
         this.durability_overrides.remove(idWithTag.toShortString()) ;

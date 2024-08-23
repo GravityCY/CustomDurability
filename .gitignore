@@ -40,3 +40,5 @@ replay_*.log
 *.jfr
 /READMECF.md
 /READMEMR.md
+
+secrets.properties

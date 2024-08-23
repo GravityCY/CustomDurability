@@ -1,5 +1,6 @@
 package me.gravityio.customdurability;
 
+import me.gravityio.customdurability.commands.ModCommands;
 import me.gravityio.customdurability.mixins.inter.DamageItem;
 import me.gravityio.customdurability.network.SyncPayload;
 import net.fabricmc.api.ModInitializer;
@@ -7,6 +8,8 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -18,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 //? if >=1.20.5 {
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -82,7 +87,7 @@ public class CustomDurabilityMod implements ModInitializer {
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->
-                dispatcher.register(ModCommands.doBuild(registry, environment))
+                dispatcher.register(ModCommands.build(registry, environment))
         );
 
     }
@@ -113,7 +118,7 @@ public class CustomDurabilityMod implements ModInitializer {
     }
 
     public void onResetDurability(String itemIdOrTag) {
-        for (Item item : getItemsByIdOrTag(itemIdOrTag)) {
+        for (Item item : this.getItemsByIdOrTag(itemIdOrTag)) {
             if (!Versioned.isDamageable(item)) continue;
 
             this.setOriginalDamage(item);
@@ -150,6 +155,16 @@ public class CustomDurabilityMod implements ModInitializer {
         return TagKey.create(Registries.ITEM, id);
     }
 
+    public List<Item> getItemsByRegex(String regex) {
+        List<Item> items = new ArrayList<>(16);
+        BuiltInRegistries.ITEM.holders().forEach(itemReference -> {
+            var v = itemReference.key().toString();
+            if (!Pattern.matches(regex, v)) return;
+            items.add(itemReference.value());
+        });
+        return items;
+    }
+
     public List<Item> getItemsByIdOrTag(String idOrTag) {
         List<Item> items = new ArrayList<>();
         TagKey<Item> tag = this.getTag(idOrTag);
@@ -168,6 +183,42 @@ public class CustomDurabilityMod implements ModInitializer {
             items.add(BuiltInRegistries.ITEM.get(Versioned.parseId(idOrTag)));
         }
         return items;
+    }
+
+    public static Iterable<Holder.Reference<Item>> iterateDamageables() {
+        var it = BuiltInRegistries.ITEM.holders().iterator();
+        return () -> new Iterator<>() {
+            Holder.Reference<Item> next;
+            @Override
+            public boolean hasNext() {
+                while (it.hasNext()) {
+                    var temp = it.next();
+                    if (!temp.value().components().has(DataComponents.MAX_DAMAGE)) continue;
+                    this.next = temp;
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public Holder.Reference<Item> next() {
+                return this.next;
+            }
+        };
+    }
+
+    public static void removeDurabilityOverride(String idOrTagStr) {
+        ModConfig.INSTANCE.removeDurabilityOverrideRaw(idOrTagStr);
+        ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
+        ModConfig.INSTANCE.save();
+    }
+
+    public static void removeDurabilityOverride(String... idOrTagStrs) {
+        for (String idOrTagStr : idOrTagStrs) {
+            ModConfig.INSTANCE.removeDurabilityOverrideRaw(idOrTagStr);
+        }
+        ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
+        ModConfig.INSTANCE.save();
     }
 
 
