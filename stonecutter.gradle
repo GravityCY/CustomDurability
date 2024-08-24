@@ -15,19 +15,19 @@ stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
     ofTask "build"
 }
 
-stonecutter.registerChiseled tasks.register("chiseledTestInternal", stonecutter.chiseled) {
+stonecutter.registerChiseled tasks.register("chiseledInternalPublish", stonecutter.chiseled) {
     group = "project"
-    ofTask "subtask-a"
+    ofTask "publishMod"
 }
 
 discordWebhook {
     webhook_url = secrets.get("discord_webhook_url")
 }
 
-tasks.register("chiseledTest") {
+tasks.register("chiseledPublishMod") {
     group = "project"
 
-    dependsOn "chiseledTestInternal"
+    dependsOn "chiseledInternalPublish"
     finalizedBy "sendDiscordWebhook"
 
     doLast {
@@ -36,7 +36,7 @@ tasks.register("chiseledTest") {
             message += "# $rootProject.name $it.version Update ([Modrinth](https://modrinth.com/mod/customdurability/version/$it.modrinthFileId) | [Curseforge](https://curseforge/mc-mods/customdurability/files/$it.curseFileId))\n"
         }
         message += "$rootProject.changelog\n\n"
-        message += "As always report any issues on my [GitHub](<https://github.com/GravityCY/CustomDurability/issues>) or in https://discord.com/channels/1112046604183162961/1245461284992843946"
+        message += "As always report any issues on my [GitHub](<${rootProject.mod_sources}>) or in https://discord.com/channels/1112046604183162961/1245461284992843946"
         tasks.named("sendDiscordWebhook").configure {
             content = message
         }
