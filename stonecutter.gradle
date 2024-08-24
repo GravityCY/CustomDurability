@@ -9,6 +9,9 @@ stonecutter.active "1.21" /* [SC] DO NOT EDIT */
 def secrets = new Properties()
 rootProject.file("secrets.properties").withInputStream { secrets.load(it) }
 rootProject.ext.data = []
+rootProject.ext.changelog_overview = file("changelog-overview.md").text
+rootProject.ext.changelog_details = file("changelog-details.md").text
+rootProject.ext.changelog = rootProject.changelog_overview + "\n" + rootProject.changelog_details
 
 stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
     setGroup "project"
@@ -35,7 +38,8 @@ tasks.register("chiseledPublishMod") {
         data.forEach {
             message += "# $rootProject.name $it.version Update ([Modrinth](https://modrinth.com/mod/customdurability/version/$it.modrinthFileId) | [Curseforge](https://curseforge/mc-mods/customdurability/files/$it.curseFileId))\n"
         }
-        message += "$rootProject.changelog\n\n"
+        message += "$rootProject.changelog_overview\n\n"
+        message += "To view the details of the changelog visit the Modrinth changelog page or the CurseForge files page\n"
         message += "As always report any issues on my [GitHub](<${rootProject.mod_sources}>) or in https://discord.com/channels/1112046604183162961/1245461284992843946"
         tasks.named("sendDiscordWebhook").configure {
             content = message
