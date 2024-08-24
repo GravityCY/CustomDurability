@@ -49,7 +49,7 @@ public class ModConfig {
 
     public boolean armor_is_durability_multiplier = true;
 
-    public void armor_is_durability_multiplier(boolean val) {
+    public void setArmorMultiplierEnabled(boolean val) {
         this.armor_is_durability_multiplier = val;
         ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
     }
