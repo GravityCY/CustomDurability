@@ -1,13 +1,16 @@
 package me.gravityio.customdurability;
 
 import me.gravityio.customdurability.commands.ModCommands;
+import me.gravityio.customdurability.commands.argument.AnyStringArgument;
 import me.gravityio.customdurability.mixins.inter.DamageItem;
 import me.gravityio.customdurability.network.SyncPayload;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -54,6 +57,9 @@ public class CustomDurabilityMod implements ModInitializer {
         INSTANCE = this;
         IS_DEBUG = FabricLoader.getInstance().isDevelopmentEnvironment();
         ModConfig.INSTANCE.load();
+
+        ArgumentTypeRegistry.registerArgumentType(id("any_string_argument"), AnyStringArgument.class, SingletonArgumentInfo.contextFree(AnyStringArgument::string));
+
         //? if >=1.20.5 {
         PayloadTypeRegistry.playS2C().register(SyncPayload.TYPE, SyncPayload.CODEC);
         //?}

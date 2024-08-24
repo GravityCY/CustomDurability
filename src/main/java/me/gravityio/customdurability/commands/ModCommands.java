@@ -50,7 +50,7 @@ public class ModCommands {
                 .then(ListCommand.build())
                 .then(ClearCommand.build())
                 .then(SetCommand.build())
-                .then(TempCommand.build());
+                .then(ContextCommand.build());
 
         return cd;
     }
@@ -72,8 +72,8 @@ public class ModCommands {
             }
         }
 
-        public boolean removeAddition(String str) {
-            return this.additionsMap.remove(str) != null;
+        public void removeAddition(String str) {
+            this.additionsMap.remove(str);
         }
 
         public int onConfirm(CommandContext<CommandSourceStack> context) {

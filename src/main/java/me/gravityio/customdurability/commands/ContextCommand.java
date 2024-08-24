@@ -3,6 +3,7 @@ package me.gravityio.customdurability.commands;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
@@ -15,20 +16,24 @@ import net.minecraft.network.chat.Style;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class TempCommand {
+public class ContextCommand {
 
     public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> DEFAULT_MODIFIER = ListCommand.ELEMENT_DISPLAY
-            .andThen(ListCommand.getElementButtons("/cd temp set %s %d", "/cd temp clear %s"))
+            .andThen(ListCommand.getElementButtons("/cd context set %s %d", "/cd context clear %s"))
             .andThen(ListCommand.NEWLINE);
 
-    public static MutableComponent getDefaultListMessage(ModCommands.ItemCommandContext context) {
-        var message = Component.translatable("commands.customdurability.temp.list");
+    public static MutableComponent getListMessage(ModCommands.ItemCommandContext context) {
+        if (context.getAdditions().isEmpty()) {
+            return Component.translatable("commands.customdurability.list.none");
+        }
+
+        var message = Component.translatable("commands.customdurability.context.list");
         message.append("\n");
-        message.append(ListCommand.getListMessage(context.getAdditions(), DEFAULT_MODIFIER));
+        message.append(ListCommand.getListBuilder(context.getAdditions(), DEFAULT_MODIFIER));
         message.append("\n");
 
-        var a = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cd temp confirm"));
-        var b = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cd temp cancel"));
+        var a = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cd context confirm"));
+        var b = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cd context cancel"));
 
         message.append(Component.translatable("commands.customdurability.messages.add_all"));
 
@@ -45,15 +50,15 @@ public class TempCommand {
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> build() {
-        var tempCommand = Commands.literal("temp");
+        var contextCommand = Commands.literal("context");
 
-        tempCommand.then(buildConfirm());
-        tempCommand.then(buildCancel());
-        tempCommand.then(buildSet());
-        tempCommand.then(buildClear());
-        tempCommand.then(buildList());
+        contextCommand.then(buildConfirm());
+        contextCommand.then(buildCancel());
+        contextCommand.then(buildSet());
+        contextCommand.then(buildClear());
+        contextCommand.then(buildList());
 
-        return tempCommand;
+        return contextCommand;
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> buildList() {
@@ -64,16 +69,11 @@ public class TempCommand {
 
             var context = ModCommands.getContext(cmdContext);
             if (context == null) {
-                source.sendSuccess(() -> Component.translatable("commands.customdurability.temp.no_context"), false);
+                source.sendSuccess(() -> Component.translatable("commands.customdurability.context.no_context"), false);
                 return 0;
             }
 
-            if (context.getAdditions().isEmpty()) {
-                source.sendSuccess(() -> Component.translatable("commands.customdurability.list.none"), false);
-                return 0;
-            }
-
-            source.sendSuccess(() -> getDefaultListMessage(context), false);
+            source.sendSuccess(() -> getListMessage(context), false);
             return 1;
         });
 
@@ -87,7 +87,7 @@ public class TempCommand {
         confirm.executes(cmdContext -> {
             var context = ModCommands.getContext(cmdContext);
             if (context == null) {
-                cmdContext.getSource().sendFailure(Component.translatable("commands.customdurability.temp.no_context"));
+                cmdContext.getSource().sendFailure(Component.translatable("commands.customdurability.context.no_context"));
                 return 0;
             }
             var ret = context.onCancel(cmdContext);
@@ -105,7 +105,7 @@ public class TempCommand {
         confirm.executes(cmdContext -> {
             var context = ModCommands.getContext(cmdContext);
             if (context == null) {
-                cmdContext.getSource().sendFailure(Component.translatable("commands.customdurability.temp.no_context"));
+                cmdContext.getSource().sendFailure(Component.translatable("commands.customdurability.context.no_context"));
                 return 0;
             }
             var ret = context.onConfirm(cmdContext);
@@ -130,7 +130,7 @@ public class TempCommand {
             var context = ModCommands.getContextNew(cmdContext);
             context.setAddition(durability, str);
 
-            source.sendSuccess(() -> Component.translatable("commands.customdurability.temp.set", str, durability), false);
+            source.sendSuccess(() -> Component.translatable("commands.customdurability.context.set", str, durability), false);
             return 1;
         });
 
@@ -145,11 +145,11 @@ public class TempCommand {
         clearCommand.executes(cmdContext -> {
             var context = ModCommands.getContext(cmdContext);
             if (context == null) {
-                cmdContext.getSource().sendFailure(Component.translatable("commands.customdurability.temp.no_context"));
+                cmdContext.getSource().sendFailure(Component.translatable("commands.customdurability.context.no_context"));
                 return 0;
             }
             context.getAdditions().clear();
-            cmdContext.getSource().sendSuccess(() -> Component.translatable("commands.customdurability.temp.clear.all"), false);
+            cmdContext.getSource().sendSuccess(() -> Component.translatable("commands.customdurability.context.clear.all"), false);
             return 1;
         });
 
@@ -161,7 +161,7 @@ public class TempCommand {
 
             var context = ModCommands.getContext(cmdContext);
             if (context == null) {
-                cmdContext.getSource().sendFailure(Component.translatable("commands.customdurability.temp.no_context"));
+                cmdContext.getSource().sendFailure(Component.translatable("commands.customdurability.context.no_context"));
                 return 0;
             }
 
@@ -171,9 +171,9 @@ public class TempCommand {
             }
 
             context.removeAddition(str);
-            var message = Component.translatable("commands.customdurability.temp.clear.remove", str);
+            var message = Component.translatable("commands.customdurability.context.clear.remove", str);
             message.append("\n");
-            message.append(TempCommand.getDefaultListMessage(context));
+            message.append(ContextCommand.getListMessage(context));
             source.sendSuccess(() -> message, false);
             return 1;
         });

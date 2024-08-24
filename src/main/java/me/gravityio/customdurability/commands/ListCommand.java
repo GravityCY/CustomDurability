@@ -45,7 +45,7 @@ public class ListCommand {
         };
     }
 
-    public static MutableComponent getListMessage(HashMap<String, Integer> data, BiConsumer<Map.Entry<String, Integer>, MutableComponent> elementModifier) {
+    public static MutableComponent getListBuilder(HashMap<String, Integer> data, BiConsumer<Map.Entry<String, Integer>, MutableComponent> elementModifier) {
         var message = Component.literal("");
         for (Map.Entry<String, Integer> entry : data.entrySet()) {
             elementModifier.accept(entry, message);
@@ -53,10 +53,10 @@ public class ListCommand {
         return message;
     }
 
-    private static Component getDefaultListMessage() {
+    private static Component getListMessage() {
         var message = Component.translatable("commands.customdurability.list");
         message.append("\n");
-        message.append(getListMessage(ModConfig.INSTANCE.durability_overrides, DEFAULT_MODIFIER));
+        message.append(getListBuilder(ModConfig.INSTANCE.durability_overrides, DEFAULT_MODIFIER));
         return message;
     }
 
@@ -69,7 +69,7 @@ public class ListCommand {
                 source.sendFailure(Component.translatable("commands.customdurability.list.none"));
                 return 0;
             }
-            source.sendSuccess(ListCommand::getDefaultListMessage, false);
+            source.sendSuccess(ListCommand::getListMessage, false);
             return 1;
         });
 

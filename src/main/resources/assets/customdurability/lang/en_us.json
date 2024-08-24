@@ -19,15 +19,15 @@
   "commands.customdurability.list.none": "§aDurabilities: §7None",
   "commands.customdurability.set": "§7Set Durability of '%s§7' to %d.",
 
-  "commands.customdurability.temp.no_context": "§cThere is no current context!",
-  "commands.customdurability.temp.clear.all": "§cCleared the current context!",
-  "commands.customdurability.temp.clear.remove": "§7Removed '%s§7' from the context list!",
-  "commands.customdurability.temp.list": "§aContext List:",
-  "commands.customdurability.temp.list.none": "§aDurabilities: §7Current context list is empty...",
-  "commands.customdurability.temp.set": "§7Added '§f%s§7' with durability '§f%d§7' to current context.",
+  "commands.customdurability.context.no_context": "§cThere is no current context!",
+  "commands.customdurability.context.clear.all": "§cCleared the current context!",
+  "commands.customdurability.context.clear.remove": "§7Removed '%s§7' from the context list!",
+  "commands.customdurability.context.list": "§aContext List:",
+  "commands.customdurability.context.list.none": "§aDurabilities: §7Current context list is empty...",
+  "commands.customdurability.context.set": "§7Added '§f%s§7' with durability '§f%d§7' to current context.",
 
   "commands.customdurability.messages.add_all": "Add all?",
-  "commands.customdurability.messages.confirm": "Confirm",
+  "commands.customdurability.messages.confirm": "§aConfirm",
   "commands.customdurability.messages.cancel": "§cCancel",
   "commands.customdurability.messages.remove": "§cRemove",
   "commands.customdurability.messages.edit": "Edit"

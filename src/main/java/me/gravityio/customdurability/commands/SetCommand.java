@@ -1,11 +1,11 @@
 package me.gravityio.customdurability.commands;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import me.gravityio.customdurability.CustomDurabilityMod;
 import me.gravityio.customdurability.WildcardMatcher;
+import me.gravityio.customdurability.commands.argument.AnyStringArgument;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
@@ -22,20 +22,20 @@ public class SetCommand {
         var setCmd = Commands.literal("set");
 
         setCmd.then(SetCommand.buildItem());
-        setCmd.then(SetCommand.buildRaw());
+        setCmd.then(SetCommand.buildWildcard());
 
         return setCmd;
     }
 
-    private static LiteralArgumentBuilder<CommandSourceStack> buildRaw() {
-        var rawCmd = Commands.literal("raw");
+    private static LiteralArgumentBuilder<CommandSourceStack> buildWildcard() {
+        var rawCmd = Commands.literal("wildcard");
 
-        var stringArg = Commands.argument("string", StringArgumentType.string());
-        var durabilityArg = Commands.argument("durability",IntegerArgumentType.integer());
+        var stringArg = Commands.argument("string", AnyStringArgument.string());
+        var durabilityArg = Commands.argument("durability", IntegerArgumentType.integer());
         durabilityArg.requires(CommandSourceStack::isPlayer);
         durabilityArg.executes(cmdContext -> {
             var source = cmdContext.getSource();
-            var str = StringArgumentType.getString(cmdContext, "string");
+            var str = AnyStringArgument.get(cmdContext, "string");
             var durability = IntegerArgumentType.getInteger(cmdContext, "durability");
 
             var toAddIDList = new ArrayList<String>(16);
@@ -47,7 +47,7 @@ public class SetCommand {
 
             var context = ModCommands.getContextNew(cmdContext);
             context.setAdditionAll(durability, toAddIDList.toArray(String[]::new));
-            source.sendSuccess(() -> TempCommand.getDefaultListMessage(context), false);
+            source.sendSuccess(() -> ContextCommand.getListMessage(context), false);
             return 1;
         });
 
@@ -59,7 +59,8 @@ public class SetCommand {
     private static LiteralArgumentBuilder<CommandSourceStack> buildItem() {
         var itemCmd = Commands.literal("item");
 
-        var itemArg = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM));
+        var itemArg = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM))
+                .suggests(new ItemSuggestionProvider());
         var durabilityArg = Commands.argument("durability", IntegerArgumentType.integer());
 
         durabilityArg.executes(context -> {
