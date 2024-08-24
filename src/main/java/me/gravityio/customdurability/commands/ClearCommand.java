@@ -13,21 +13,21 @@ import net.minecraft.network.chat.Component;
 
 public class ClearCommand {
 
-
     public static LiteralArgumentBuilder<CommandSourceStack> build() {
         var clear = Commands.literal("clear");
+
         clear.executes(context -> {
             ModConfig.INSTANCE.durability_overrides.clear();
             ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
             ModConfig.INSTANCE.save();
-            context.getSource().sendSuccess(() -> Component.translatable("commands.customdurability.clear"), false);
+            context.getSource().sendSuccess(() -> Component.translatable("commands.customdurability.clear.all"), false);
             return 1;
         });
 
-        var idOrTagArg = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM));
-        idOrTagArg.executes(context -> {
-            var source = context.getSource();
-            var item = ResourceOrTagKeyArgument.getResourceOrTagKey(context, "item", Registries.ITEM, new DynamicCommandExceptionType(o -> () -> ""));
+        var itemArg = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM));
+        itemArg.executes(cmdContext -> {
+            var source = cmdContext.getSource();
+            var item = ResourceOrTagKeyArgument.getResourceOrTagKey(cmdContext, "item", Registries.ITEM, new DynamicCommandExceptionType(o -> () -> ""));
             var str = item.asPrintable();
 
             if (!ModConfig.INSTANCE.hasDurabilityOverride(str)) {
@@ -37,11 +37,11 @@ public class ClearCommand {
             CustomDurabilityMod.removeDurabilityOverride(str);
             source.sendSuccess(() -> Component.translatable("commands.customdurability.clear.remove", str), false);
             return 1;
-
         });
-        clear.then(idOrTagArg);
 
+        clear.then(itemArg);
         return clear;
-
     }
+
+
 }

@@ -28,7 +28,7 @@ public class ArmorMultiplierCommand {
         onOffArg.executes(context -> {
             var source = context.getSource();
             var onOff = BoolArgumentType.getBool(context, "onOff");
-            ModConfig.INSTANCE.armor_is_durability_multiplier(onOff);
+            ModConfig.INSTANCE.setArmorMultiplierEnabled(onOff);
             ModConfig.INSTANCE.save();
             Component text;
             if (onOff) {

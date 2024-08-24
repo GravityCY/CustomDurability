@@ -20,9 +20,7 @@ import net.minecraft.world.item.Item;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 //? if >=1.20.5 {
@@ -185,6 +183,14 @@ public class CustomDurabilityMod implements ModInitializer {
         return items;
     }
 
+    public static List<Holder.Reference<Item>> getAllDamageables() {
+        List<Holder.Reference<Item>> items = new ArrayList<>(BuiltInRegistries.ITEM.size() / 2);
+        for (Holder.Reference<Item> damageable : iterateDamageables()) {
+            items.add(damageable);
+        }
+        return items;
+    }
+
     public static Iterable<Holder.Reference<Item>> iterateDamageables() {
         var it = BuiltInRegistries.ITEM.holders().iterator();
         return () -> new Iterator<>() {
@@ -208,14 +214,28 @@ public class CustomDurabilityMod implements ModInitializer {
     }
 
     public static void removeDurabilityOverride(String idOrTagStr) {
-        ModConfig.INSTANCE.removeDurabilityOverrideRaw(idOrTagStr);
+        ModConfig.INSTANCE.removeDurabilityOverride(idOrTagStr);
         ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
         ModConfig.INSTANCE.save();
     }
 
-    public static void removeDurabilityOverride(String... idOrTagStrs) {
+    public static void removeDurabilityOverrides(String... idOrTagStrs) {
         for (String idOrTagStr : idOrTagStrs) {
-            ModConfig.INSTANCE.removeDurabilityOverrideRaw(idOrTagStr);
+            ModConfig.INSTANCE.removeDurabilityOverride(idOrTagStr);
+        }
+        ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
+        ModConfig.INSTANCE.save();
+    }
+
+    public static void setDurabilityOverride(String idOrTagStr, int durability) {
+        ModConfig.INSTANCE.setDurabilityOverride(idOrTagStr,durability);
+        ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
+        ModConfig.INSTANCE.save();
+    }
+
+    public static void setDurabilityOverrides(HashMap<String, Integer> overrides) {
+        for (Map.Entry<String, Integer> entry : overrides.entrySet()) {
+            ModConfig.INSTANCE.setDurabilityOverride(entry.getKey(), entry.getValue());
         }
         ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
         ModConfig.INSTANCE.save();

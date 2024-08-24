@@ -49,7 +49,7 @@ public class ModConfig {
 
     public boolean armor_is_durability_multiplier = true;
 
-    public void armor_is_durability_multiplier(boolean val) {
+    public void setArmorMultiplierEnabled(boolean val) {
         this.armor_is_durability_multiplier = val;
         ModEvents.ON_DURABILITY_CHANGED.invoker().onChanged();
     }
@@ -71,7 +71,7 @@ public class ModConfig {
         this.durability_overrides.put(idWithTag.toShortString(), value);
     }
 
-    public void removeDurabilityOverrideRaw(String idOrTagStr) {
+    public void removeDurabilityOverride(String idOrTagStr) {
         var idWithTag = new IdentifierWithTag(idOrTagStr);
         this.removeDuplicates(idWithTag);
         this.durability_overrides.remove(idWithTag.toShortString()) ;
