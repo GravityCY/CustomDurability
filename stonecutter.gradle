@@ -46,8 +46,3 @@ tasks.register("chiseledPublishMod") {
         }
     }
 }
-
-//tasks.register("publishMods") {
-//    group = "project"
-//    dependsOn "chiseledPublish"
-//}

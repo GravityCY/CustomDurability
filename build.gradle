@@ -161,11 +161,11 @@ processResources  {
             "minecraft_version_range": project.minecraft_version_range,
             "fabric_loader_version": rootProject.loader_version,
             "fabric_api_version": project.fabric_version,
-            "java_version": project.java_version
+            "java_version": javaVersionNum
     ]
 
     def mixinProperties = [
-       "java_version": project.java_version
+       "java_version": javaVersionNum
     ]
 
     inputs.properties(modProperties)

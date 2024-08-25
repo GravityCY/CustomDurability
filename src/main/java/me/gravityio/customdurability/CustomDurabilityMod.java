@@ -12,7 +12,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -205,7 +204,8 @@ public class CustomDurabilityMod implements ModInitializer {
             public boolean hasNext() {
                 while (it.hasNext()) {
                     var temp = it.next();
-                    if (!temp.value().components().has(DataComponents.MAX_DAMAGE)) continue;
+
+                    if (!Versioned.isDamageable(temp.value())) continue;
                     this.next = temp;
                     return true;
                 }
