@@ -1,5 +1,6 @@
-package me.gravityio.customdurability;
+package me.gravityio.customdurability.lib;
 
+import me.gravityio.customdurability.Versioned;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;

@@ -1,4 +1,4 @@
-package me.gravityio.customdurability;
+package me.gravityio.customdurability.lib;
 
 public class WildcardMatcher {
 

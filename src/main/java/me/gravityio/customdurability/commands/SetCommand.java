@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import me.gravityio.customdurability.CustomDurabilityMod;
-import me.gravityio.customdurability.WildcardMatcher;
+import me.gravityio.customdurability.lib.WildcardMatcher;
 import me.gravityio.customdurability.commands.argument.AnyStringArgument;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;

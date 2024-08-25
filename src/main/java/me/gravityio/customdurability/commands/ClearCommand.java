@@ -35,7 +35,10 @@ public class ClearCommand {
                 return 1;
             }
             CustomDurabilityMod.removeDurabilityOverride(str);
-            source.sendSuccess(() -> Component.translatable("commands.customdurability.clear.remove", str), false);
+            var message = Component.translatable("commands.customdurability.clear.remove", str);
+            message.append("\n");
+            message.append(ListCommand.getListMessage());
+            source.sendSuccess(() -> message, false);
             return 1;
         });
 

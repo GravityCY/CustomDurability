@@ -53,7 +53,10 @@ public class ListCommand {
         return message;
     }
 
-    private static Component getListMessage() {
+    public static Component getListMessage() {
+        if (ModConfig.INSTANCE.durability_overrides.isEmpty()) {
+            return Component.translatable("commands.customdurability.list.none");
+        }
         var message = Component.translatable("commands.customdurability.list");
         message.append("\n");
         message.append(getListBuilder(ModConfig.INSTANCE.durability_overrides, DEFAULT_MODIFIER));
@@ -65,10 +68,6 @@ public class ListCommand {
 
         list.executes(context -> {
             var source = context.getSource();
-            if (ModConfig.INSTANCE.durability_overrides.isEmpty()) {
-                source.sendFailure(Component.translatable("commands.customdurability.list.none"));
-                return 0;
-            }
             source.sendSuccess(ListCommand::getListMessage, false);
             return 1;
         });
