@@ -19,12 +19,25 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public class ContextCommand {
-    public static final Predicate<Item> IS_TOOL = item -> item instanceof DiggerItem || item instanceof FishingRodItem || item instanceof FoodOnAStickItem<?>
-            || item instanceof FlintAndSteelItem || item instanceof ShearsItem || item instanceof BrushItem;
-    public static final Predicate<Item> IS_WEAPON = item -> item instanceof SwordItem || item instanceof CrossbowItem || item instanceof BowItem
-            || item instanceof TridentItem || item instanceof MaceItem;
-    public static final Predicate<Item> IS_ARMOUR = item -> item instanceof ArmorItem || item instanceof ShieldItem || item instanceof AnimalArmorItem
-            || item instanceof ElytraItem;
+    public static final Predicate<Item> IS_TOOL = item -> item instanceof DiggerItem || item instanceof FishingRodItem
+            || item instanceof FoodOnAStickItem<?> || item instanceof FlintAndSteelItem || item instanceof ShearsItem
+            //? if >=1.20.5 {
+            || item instanceof BrushItem
+            //?}
+        ;
+
+    public static final Predicate<Item> IS_WEAPON = item -> item instanceof SwordItem || item instanceof CrossbowItem
+            || item instanceof BowItem || item instanceof TridentItem
+            //? if >=1.20.5 {
+            || item instanceof MaceItem
+            //?}
+    ;
+    public static final Predicate<Item> IS_ARMOUR = item -> item instanceof ArmorItem || item instanceof ShieldItem
+            || item instanceof ElytraItem
+            //? if >=1.20.5 {
+            || item instanceof AnimalArmorItem
+            //?}
+    ;
 
     public static final Component NO_CONTEXT = Component.translatable("commands.customdurability.context.no_context");
 
