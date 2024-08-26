@@ -35,8 +35,10 @@ A bunch of commands to help you set the durability of an item using its ID or Ta
   - *lists all items in your current context.*
 - `/cd context clear <Optional Item ID>`
   - *clears all items in your current context.*
-- `/cd context set <Item ID or Tag> <Durability>`
+- `/cd context set item <Item ID or Tag> <Durability>`
   - *sets an item in your current context to a durability.*
+- `/cd context set all <Durability>`
+  - *sets all items in your current context to a durability.*
 - `/cd context filter <TOOL / WEAPON / ARMOUR / OTHER>`
   - *filters items in your current context list based off of the given input* (**KEEPS** the thing you inputted, look at example below) 
 - `/cd context confirm`

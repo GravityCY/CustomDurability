@@ -2,12 +2,10 @@ package me.gravityio.customdurability.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import me.gravityio.customdurability.ModConfig;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,11 +19,19 @@ public class ListCommand {
         var string = " - '§b%s§r': %d".formatted(id, durability);
         message.append(string);
     };
-    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> ELEMENT_BUTTONS_MODIFIER = getElementButtons("/cd set item %s %d", "/cd clear %s");
+    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> ELEMENT_BUTTONS_MODIFIER = getElementButtons("/cd set item %s %d", "/cd clear %s", Component.translatable("commands.customdurability.messages.edit.tooltip"), Component.translatable("commands.customdurability.messages.remove.tooltip"));
     public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> NEWLINE = (entry, message) -> message.append("\n");
     public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> DEFAULT_MODIFIER = ELEMENT_DISPLAY.andThen(ELEMENT_BUTTONS_MODIFIER).andThen(NEWLINE);
 
-    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> getElementButtons(String setCommandFormat, String clearCommandFormat) {
+    public static Style getStyleRunCommand(String command, Component tooltip) {
+        return Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, tooltip));
+    }
+
+    public static Style getStyleSuggestCommand(String command, Component tooltip) {
+        return Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, tooltip));
+    }
+
+    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> getElementButtons(String setCommandFormat, String clearCommandFormat, Component setTooltip, Component removeTooltip) {
         return (entry, message) -> {
             var id = entry.getKey();
             var durability = entry.getValue();
@@ -35,12 +41,12 @@ public class ListCommand {
 
             message.append(" ");
             message.append("§7[");
-            message.append(Component.translatable("commands.customdurability.messages.edit").withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, setCommand))));
+            message.append(Component.translatable("commands.customdurability.messages.edit").withStyle(getStyleSuggestCommand(setCommand, setTooltip)));
             message.append("§7]");
 
             message.append(" ");
             message.append("§7[");
-            message.append(Component.translatable("commands.customdurability.messages.remove").withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, clearCommand))));
+            message.append(Component.translatable("commands.customdurability.messages.remove").withStyle(getStyleRunCommand(clearCommand, removeTooltip)));
             message.append("§7]");
         };
     }

@@ -8,10 +8,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.*;
 import net.minecraft.world.item.*;
 
 import java.util.Map;
@@ -19,12 +16,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public class ContextCommand {
-    public static final Predicate<Item> IS_TOOL = item -> item instanceof DiggerItem || item instanceof FishingRodItem
-            || item instanceof FoodOnAStickItem<?> || item instanceof FlintAndSteelItem || item instanceof ShearsItem
-            //? if >=1.20.5 {
-            || item instanceof BrushItem
-            //?}
-        ;
+    public static final Predicate<Item> IS_TOOL = item -> item instanceof DiggerItem || item instanceof FishingRodItem || item instanceof ShearsItem;
 
     public static final Predicate<Item> IS_WEAPON = item -> item instanceof SwordItem || item instanceof CrossbowItem
             || item instanceof BowItem || item instanceof TridentItem
@@ -42,7 +34,7 @@ public class ContextCommand {
     public static final Component NO_CONTEXT = Component.translatable("commands.customdurability.context.no_context");
 
     public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> DEFAULT_MODIFIER = ListCommand.ELEMENT_DISPLAY
-            .andThen(ListCommand.getElementButtons("/cd context set %s %d", "/cd context clear %s"))
+            .andThen(ListCommand.getElementButtons("/cd context set item %s %d", "/cd context clear %s", Component.translatable("commands.customdurability.messages.context.edit.tooltip"), Component.literal("Removes the item from the temporary context.")))
             .andThen(ListCommand.NEWLINE);
 
     public static MutableComponent getListMessage(ModCommands.ItemCommandContext context) {
@@ -55,19 +47,29 @@ public class ContextCommand {
         message.append(ListCommand.getListBuilder(context.getAdditions(), DEFAULT_MODIFIER));
         message.append("\n");
 
-        var a = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cd context confirm"));
-        var b = Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/cd context cancel"));
+        message.append(Component.translatable("commands.customdurability.messages.filter"));
+
+        message.append(" ");
+        message.append(Component.translatable("commands.customdurability.filter_types.tool").withStyle(ListCommand.getStyleRunCommand("/cd context filter TOOL", Component.translatable("commands.customdurability.filter_types.tool.tooltip"))));
+        message.append(" ");
+        message.append(Component.translatable("commands.customdurability.filter_types.weapon").withStyle(ListCommand.getStyleRunCommand("/cd context filter WEAPON", Component.translatable("commands.customdurability.filter_types.weapon.tooltip"))));
+        message.append(" ");
+        message.append(Component.translatable("commands.customdurability.filter_types.armour").withStyle(ListCommand.getStyleRunCommand("/cd context filter ARMOUR", Component.translatable("commands.customdurability.filter_types.armour.tooltip"))));
+        message.append(" ");
+        message.append(Component.translatable("commands.customdurability.filter_types.other").withStyle(ListCommand.getStyleRunCommand("/cd context filter OTHER", Component.translatable("commands.customdurability.filter_types.other.tooltip"))));
+
+        message.append("\n");
 
         message.append(Component.translatable("commands.customdurability.messages.add_all"));
 
         message.append(" ");
         message.append("§7[");
-        message.append(Component.translatable("commands.customdurability.messages.confirm").withStyle(a));
+        message.append(Component.translatable("commands.customdurability.messages.confirm").withStyle(ListCommand.getStyleRunCommand("/cd context confirm", Component.translatable("commands.customdurability.messages.context.confirm.tooltip"))));
         message.append("§7]");
 
         message.append(" ");
         message.append("§7[");
-        message.append(Component.translatable("commands.customdurability.messages.cancel").withStyle(b));
+        message.append(Component.translatable("commands.customdurability.messages.cancel").withStyle(ListCommand.getStyleRunCommand("/cd context cancel", Component.translatable("commands.customdurability.messages.context.cancel.tooltip"))));
         message.append("§7]");
         return message;
     }
@@ -180,6 +182,39 @@ public class ContextCommand {
 
     private static  LiteralArgumentBuilder<CommandSourceStack> buildSet() {
         var setCommand = Commands.literal("set");
+
+        setCommand.then(buildSetItem());
+        setCommand.then(buildSetAll());
+
+        return setCommand;
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> buildSetAll() {
+        var allCommand = Commands.literal("all");
+        var durabilityArgument = Commands.argument("durability", IntegerArgumentType.integer(0));
+        durabilityArgument.executes(cmdContext -> {
+            var durability = IntegerArgumentType.getInteger(cmdContext, "durability");
+            var context = ModCommands.getContext(cmdContext);
+            if (context == null) {
+                cmdContext.getSource().sendFailure(NO_CONTEXT);
+                return 0;
+            }
+            for (Map.Entry<String, Integer> entry : context.getAdditions().entrySet()) {
+                entry.setValue(durability);
+            }
+            var message = Component.translatable("commands.customdurability.context.set.all", durability);
+            message.append("\n").append(getListMessage(context));
+            cmdContext.getSource().sendSuccess(() -> message, false);
+            return 1;
+        });
+        allCommand.then(durabilityArgument);
+
+        return allCommand;
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> buildSetItem() {
+        var itemCommand = Commands.literal("item");
+
         var itemArgument = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM));
         var durabilityArgument = Commands.argument("durability", IntegerArgumentType.integer(0));
 
@@ -195,10 +230,10 @@ public class ContextCommand {
             source.sendSuccess(() -> Component.translatable("commands.customdurability.context.set", str, durability), false);
             return 1;
         });
-
         itemArgument.then(durabilityArgument);
-        setCommand.then(itemArgument);
-        return setCommand;
+        itemCommand.then(itemArgument);
+
+        return itemCommand;
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> buildClear() {

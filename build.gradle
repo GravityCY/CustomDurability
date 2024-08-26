@@ -66,37 +66,39 @@ class UploadData {
     def curseFileId;
 }
 
-tasks.register("subtask-a") {
-    finalizedBy "subtask-b"
-    finalizedBy "subtask-c"
-
-    doLast {
-        println "Subtask A"
-        def data = new UploadData()
-        data.version = project.version
-        rootProject.ext.data += data
-    }
-}
-
-tasks.register("subtask-b") {
-    doLast {
-        println "Subtask B"
-        rootProject.ext.data.last.modrinthFileId = project.version
-    }
-}
-
-tasks.register("subtask-c") {
-    doLast {
-        println "Subtask C"
-        rootProject.ext.data.last.curseFileId = project.version
-    }
-}
+//tasks.register("subtask-a") {
+//    dependsOn "build"
+//
+//    finalizedBy "subtask-b"
+//    finalizedBy "subtask-c"
+//
+//    doLast {
+//        println "Subtask A"
+//        def data = new UploadData()
+//        data.version = project.version
+//        rootProject.ext.data += data
+//    }
+//}
+//
+//tasks.register("subtask-b") {
+//    doLast {
+//        println "Subtask B"
+//        rootProject.ext.data.last.modrinthFileId = project.version
+//    }
+//}
+//
+//tasks.register("subtask-c") {
+//    doLast {
+//        println "Subtask C"
+//        rootProject.ext.data.last.curseFileId = project.version
+//    }
+//}
 
 tasks.register('publishMod') {
     group = "publishing"
 
-    finalizedBy "publishCurseForge"
     finalizedBy "modrinth"
+    finalizedBy "publishCurseForge"
 
     doLast {
         def data = new UploadData()

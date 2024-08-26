@@ -8,41 +8,46 @@ stonecutter.active "1.21" /* [SC] DO NOT EDIT */
 
 def secrets = new Properties()
 rootProject.file("secrets.properties").withInputStream { secrets.load(it) }
+
 rootProject.ext.data = []
 rootProject.ext.changelog_overview = file("changelog-overview.md").text
 rootProject.ext.changelog_details = file("changelog-details.md").text
 rootProject.ext.changelog = rootProject.changelog_overview + "\n" + rootProject.changelog_details
 
-stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
-    setGroup "project"
-    ofTask "build"
+def chiseledDepends(task, taskName) {
+    def setupTask = rootProject.tasks.named("chiseledStonecutter")
+    stonecutter.versions.forEach {
+        def subtask = rootProject.project(it.project).tasks.named(taskName)
+        task.dependsOn(subtask)
+        subtask.get().mustRunAfter(setupTask)
+    }
 }
 
-stonecutter.registerChiseled tasks.register("chiseledInternalPublish", stonecutter.chiseled) {
-    group = "other"
-    ofTask "publishMod"
-}
-
-discordWebhook {
-    webhook_url = secrets.get("discord_webhook_url")
-}
-
-tasks.register("chiseledPublishMod") {
+stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
     group = "project"
-
-    dependsOn "chiseledInternalPublish"
-    finalizedBy "sendDiscordWebhook"
+    dependsOn("chiseledStonecutter")
+    chiseledDepends(it, "publishMod")
+    finalizedBy("sendDiscordWebhook")
 
     doLast {
         def message = ""
         rootProject.ext.data.forEach {
-            message += "# $rootProject.name $it.version Update ([Modrinth](https://modrinth.com/mod/customdurability/version/$it.modrinthFileId) | [Curseforge](https://curseforge/mc-mods/customdurability/files/$it.curseFileId))\n"
+            message += "# $rootProject.name $it.version Update ([Modrinth](<https://modrinth.com/mod/customdurability/version/${it.modrinthFileId}>) | [Curseforge](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${it.curseFileId}>))\n"
         }
-        message += "$rootProject.changelog_overview\n\n"
-        message += "To view the details of the changelog visit the Modrinth changelog page or the CurseForge files page\n"
-        message += "As always report any issues on my [GitHub](<${rootProject.mod_sources}>) or in https://discord.com/channels/1112046604183162961/1245461284992843946"
+        message += "$rootProject.ext.changelog_overview\n\n"
+        message += "**To view the details of the changelog visit the [Modrinth changelog page](<https://modrinth.com/mod/customdurability/changelog>) or the [CurseForge files page](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${rootProject.ext.data[0].curseFileId}>)**\n"
+        message += "**As always report any issues on my [GitHub](<${rootProject.mod_sources}>) or in https://discord.com/channels/1112046604183162961/1245461284992843946**"
         tasks.named("sendDiscordWebhook").configure {
-            content = message
+            it.content = message
         }
     }
+}
+
+stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
+    group = "project"
+    ofTask "build"
+}
+
+discordWebhook {
+    webhook_url = secrets.get("discord_webhook_url")
 }
