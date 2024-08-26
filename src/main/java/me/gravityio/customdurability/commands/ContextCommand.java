@@ -1,9 +1,9 @@
 package me.gravityio.customdurability.commands;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
@@ -12,11 +12,21 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.world.item.*;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 public class ContextCommand {
+    public static final Predicate<Item> IS_TOOL = item -> item instanceof DiggerItem || item instanceof FishingRodItem || item instanceof FoodOnAStickItem<?>
+            || item instanceof FlintAndSteelItem || item instanceof ShearsItem || item instanceof BrushItem;
+    public static final Predicate<Item> IS_WEAPON = item -> item instanceof SwordItem || item instanceof CrossbowItem || item instanceof BowItem
+            || item instanceof TridentItem || item instanceof MaceItem;
+    public static final Predicate<Item> IS_ARMOUR = item -> item instanceof ArmorItem || item instanceof ShieldItem || item instanceof AnimalArmorItem
+            || item instanceof ElytraItem;
+
+    public static final Component NO_CONTEXT = Component.translatable("commands.customdurability.context.no_context");
 
     public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> DEFAULT_MODIFIER = ListCommand.ELEMENT_DISPLAY
             .andThen(ListCommand.getElementButtons("/cd context set %s %d", "/cd context clear %s"))
@@ -57,8 +67,47 @@ public class ContextCommand {
         contextCommand.then(buildSet());
         contextCommand.then(buildClear());
         contextCommand.then(buildList());
+        contextCommand.then(buildFilter());
 
         return contextCommand;
+    }
+
+    private static LiteralArgumentBuilder<CommandSourceStack> buildFilter() {
+        var filterCommand = Commands.literal("filter");
+
+        var typeArg = Commands.argument("type", StringArgumentType.word());
+        typeArg.suggests((context, builder) -> {
+            builder.suggest("TOOL");
+            builder.suggest("WEAPON");
+            builder.suggest("ARMOUR");
+            builder.suggest("OTHER");
+            return builder.buildFuture();
+        });
+
+        typeArg.executes(cmdContext -> {
+            var type = StringArgumentType.getString(cmdContext, "type");
+            var context = ModCommands.getContext(cmdContext);
+            if (context == null) {
+                cmdContext.getSource().sendFailure(NO_CONTEXT);
+                return 0;
+            }
+            switch (type) {
+                case "TOOL" -> context.filter(IS_TOOL);
+                case "WEAPON" -> context.filter(IS_WEAPON);
+                case "ARMOUR" -> context.filter(IS_ARMOUR);
+                case "OTHER" -> context.filter(IS_TOOL.or(IS_WEAPON).or(IS_ARMOUR).negate());
+                default -> {
+                    cmdContext.getSource().sendFailure(Component.literal("Unknown filter type"));
+                    return 0;
+                }
+            }
+
+            cmdContext.getSource().sendSuccess(() -> ContextCommand.getListMessage(context), false);
+            return 1;
+        });
+
+        filterCommand.then(typeArg);
+        return filterCommand;
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> buildList() {
@@ -69,7 +118,7 @@ public class ContextCommand {
 
             var context = ModCommands.getContext(cmdContext);
             if (context == null) {
-                source.sendSuccess(() -> Component.translatable("commands.customdurability.context.no_context"), false);
+                source.sendSuccess(() -> NO_CONTEXT, false);
                 return 0;
             }
 

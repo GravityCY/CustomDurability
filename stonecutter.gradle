@@ -19,7 +19,7 @@ stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
 }
 
 stonecutter.registerChiseled tasks.register("chiseledInternalPublish", stonecutter.chiseled) {
-    group = "project"
+    group = "other"
     ofTask "publishMod"
 }
 
@@ -35,7 +35,7 @@ tasks.register("chiseledPublishMod") {
 
     doLast {
         def message = ""
-        data.forEach {
+        rootProject.ext.data.forEach {
             message += "# $rootProject.name $it.version Update ([Modrinth](https://modrinth.com/mod/customdurability/version/$it.modrinthFileId) | [Curseforge](https://curseforge/mc-mods/customdurability/files/$it.curseFileId))\n"
         }
         message += "$rootProject.changelog_overview\n\n"

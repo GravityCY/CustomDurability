@@ -1,5 +1,5 @@
 ## Overview:
-- Added wildcards
+- Added wildcards (`*`)
 - Added the `/cd context` command
 - `/cd set` has changed how you set an item
 - `/cd list` now include visual buttons to remove or edit.

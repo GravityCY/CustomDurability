@@ -247,5 +247,4 @@ public class CustomDurabilityMod implements ModInitializer {
         ModConfig.INSTANCE.save();
     }
 
-
 }

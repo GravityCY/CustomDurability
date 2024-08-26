@@ -3,18 +3,23 @@ package me.gravityio.customdurability.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import me.gravityio.customdurability.CustomDurabilityMod;
+import me.gravityio.customdurability.Versioned;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class ModCommands {
     private static final HashMap<UUID, ItemCommandContext> contexts = new HashMap<>();
+
 
     public static @NotNull ItemCommandContext getContextNew(CommandContext<CommandSourceStack> source) {
         var player = source.getSource().getPlayer();
@@ -87,16 +92,18 @@ public class ModCommands {
             return 1;
         }
 
-        public int display(CommandContext<CommandSourceStack> context) {
-            var message = Component.literal("Temporary Additions:\n");
-            for (Map.Entry<String, Integer> entry : this.additionsMap.entrySet()) {
-                var id = entry.getKey();
-                var dura = entry.getValue();
-                var format = "%s: %d\n".formatted(id, dura);
-                message.append(Component.literal(format));
+        /**
+         * Filters the items based on a predicate
+         * @param itemPredicate a predicate, this should return true for an item if the item should stay in the map
+         */
+        public void filter(Predicate<Item> itemPredicate) {
+            var it = this.additionsMap.entrySet().iterator();
+            while (it.hasNext()) {
+                var entry = it.next();
+                var item = BuiltInRegistries.ITEM.get(Versioned.parseId(entry.getKey()));
+                if (itemPredicate.test(item)) continue;
+                it.remove();
             }
-            context.getSource().sendSuccess(() -> message, false);
-            return 1;
         }
 
         public HashMap<String, Integer> getAdditions() {

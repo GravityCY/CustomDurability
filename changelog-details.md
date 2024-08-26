@@ -8,7 +8,9 @@
 Now you have to specify either:
   - `item`, to specify an actual minecraft item or tag.
   - `wildcard`, you can now try to add things in bulk using wildcards! _(I do want to say I implemented my own wildcard parser and in all my tests it works perfectly, but if it seems like it's not co-operating, let me know!)_
+
 ---
+
 **`item` Examples**:
 - `/cd set item minecraft:diamond_pickaxe 100`
 - `/cd set item #cd:tools/diamond 100`
@@ -32,7 +34,9 @@ Say you run `/cd set wildcard minecraft:*diamond* 100` that will add all diamond
 
 ---
 
-This also introduces the `/cd context` command, this pretty much has exactly the same commands as inside of `/cd`, `list`, `clear`, `set`, except for two unique ones, `confirm` and `cancel`
+This also introduces the `/cd context` command, this pretty much has exactly the same commands as inside of `/cd`, basically `list`, `clear`, `set`, except for 3 unique ones, `confirm`, `cancel` and `filter`
 
 - `confirm` will add all the items you have in your current context to your config.
 - `cancel` will just clear the context.
+- `filter` will filter all of your items in your current context based off of 4 inputs `TOOL` `WEAPON` `ARMOUR` `OTHER`
+  - Make sure you have something in your context and then run for example: `/cd context filter TOOL`, this will keep only tools in your context.

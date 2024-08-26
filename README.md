@@ -13,21 +13,22 @@ Change any item's durability with a Command!
 
 ![Sample](https://i.imgur.com/EcObE6G.png)
 
-## Command
-A Command to set the durability, using the Item ID or a Tag
+## Commands
+A bunch of commands to help you set the durability of an item using its ID or Tag, or bulk setting by using wildcards
 - `/cd armorMultiplier <True or False>`
-  - _Whether to use the vanilla armor multipliers for armor_
+  - _whether to use the vanilla armor multipliers for armor_ (more on this below)
 - `/cd clear <Optional Item ID or Tag>`: 
-  - _Without the optional argument, clears the whole config._
-  - _With the optional argument, clears that specified item or tag._
+  - _sets all configured items back to their default vanilla durabilities_ 
+  - _without the optional argument, clears all configured durabilities._
+  - _with the optional argument, clears that specified item or tag._
 - `/cd list`
-  - *lists all items, tags and their durabilities in your config*
+  - *lists all items, tags and their new durabilities.*
 
 
 - `/cd set item <Item ID or Tag> <Durability>`
   - *sets an item (or tag) to a durability*
 - `/cd set wildcard <String with Wildcards> <Durability>` 
-  - *adds items using wildcards to a temporary context*
+  - *adds items using wildcards to a temporary context* (more on this below)
 
 
 - `/cd context list`
@@ -36,8 +37,10 @@ A Command to set the durability, using the Item ID or a Tag
   - *clears all items in your current context.*
 - `/cd context set <Item ID or Tag> <Durability>`
   - *sets an item in your current context to a durability.*
+- `/cd context filter <TOOL / WEAPON / ARMOUR / OTHER>`
+  - *filters items in your current context list based off of the given input* (**KEEPS** the thing you inputted, look at example below) 
 - `/cd context confirm`
-  - *applies all the item configurations in your context into your main config.*
+  - *applies all the item configurations in your current context into your main config.*
 - `/cd context cancel`
   - *cancels the current context.*
 
@@ -51,12 +54,14 @@ A Command to set the durability, using the Item ID or a Tag
 **Setting all diamond tools durability to 5000:**\
 `/cd set item #cd:tools/diamond 5000`
 
-**An example attempt of setting all diamond tools to 5000:**
+**An example attempt of setting all minecraft diamond tools to 5000 using wildcards:**
 
 `cd set wildcard minecraft:*diamond* 5000`
 
-This then puts it into your temporary config, which would match with all diamond tools, 
-and diamond armor, you'd then have to manually remove all the armor items.
+This then puts it into your temporary context, which would match with all diamond tools, 
+and diamond armor, which you don't want, you'd then have to either:
+- run `/cd context filter TOOL` to keep all tools and filter out armour
+- or just manually remove all the armour items.
 
 ---
 

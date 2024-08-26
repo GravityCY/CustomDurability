@@ -8,7 +8,9 @@ import net.minecraft.world.item.Item;
 //? if >=1.20.5 {
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-//?}
+//?} else {
+/*import net.minecraft.world.item.ArmorMaterials;
+*///?}
 
 public class Versioned {
 
@@ -40,7 +42,7 @@ public class Versioned {
         //? if >=1.20.5 {
         return armorItem.getType().getDurability(baseDurability);
          //?} else {
-        /*return armorItem.getMaterial().getDurabilityForType(armorItem.getType());
+        /*return ArmorMaterials.HEALTH_FUNCTION_FOR_TYPE.get(armorItem.getType()) * baseDurability;
         *///?}
     }
 
@@ -49,7 +51,7 @@ public class Versioned {
         //? if >=1.20.5 {
         var components = (DataComponentMap.Builder.SimpleMap) item.components();
         if (dItem.customDurability$getOriginalMaxDamage() == null) {
-            dItem.customDurability$setOriginalMaxDamage(item.components().get(DataComponents.MAX_DAMAGE));
+            dItem.customDurability$setOriginalMaxDamage(components.get(DataComponents.MAX_DAMAGE));
         }
         components.map().put(DataComponents.MAX_DAMAGE, durability);
         //?} else {
