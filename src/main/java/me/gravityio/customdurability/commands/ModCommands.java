@@ -8,8 +8,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,12 +22,40 @@ import java.util.*;
 import java.util.function.Predicate;
 
 public class ModCommands {
-    private static final HashMap<UUID, ItemCommandContext> contexts = new HashMap<>();
+    private static final HashMap<UUID, ItemCommandContext> CONTEXTS = new HashMap<>();
+    private static final ArrayList<TagKey<Item>> DAMAGEABLE_TAGS = new ArrayList<>();
 
+    public static ArrayList<TagKey<Item>> getDamageableTags() {
+        return DAMAGEABLE_TAGS;
+    }
+
+    private static boolean checkTagContainsDamageables(TagKey<Item> tag) {
+        var items = BuiltInRegistries.ITEM.getTag(tag).orElse(null);
+        if (items == null) return false;
+
+        for (Holder<Item> itemHolder : items) {
+            if (!Versioned.isDamageable(itemHolder.value())) continue;
+            return true;
+        }
+        return false;
+    }
+
+    public static void init(RegistryAccess registry) {
+        DAMAGEABLE_TAGS.clear();
+        var items = registry.registry(Registries.ITEM).orElseThrow();
+        DAMAGEABLE_TAGS.ensureCapacity((int) items.getTagNames().count() / 5);
+        items.getTagNames().forEach(itemTagKey -> {
+            if (!checkTagContainsDamageables(itemTagKey)) return;
+            DAMAGEABLE_TAGS.add(itemTagKey);
+        });
+
+        ListCommand.init(registry);
+        ContextCommand.init(registry);
+    }
 
     public static @NotNull ItemCommandContext getContextNew(CommandContext<CommandSourceStack> source) {
         var player = source.getSource().getPlayer();
-        var context = contexts.get(player.getUUID());
+        var context = CONTEXTS.get(player.getUUID());
         if (context == null) {
             setContext(source, context = new ItemCommandContext());
         }
@@ -32,18 +64,18 @@ public class ModCommands {
 
     public static ItemCommandContext getContext(CommandContext<CommandSourceStack> source) {
         var player = source.getSource().getPlayer();
-        return contexts.get(player.getUUID());
+        return CONTEXTS.get(player.getUUID());
     }
 
     public static void removeContext(CommandContext<CommandSourceStack> cmdContext) {
-        contexts.remove(cmdContext.getSource().getPlayer().getUUID());
+        CONTEXTS.remove(cmdContext.getSource().getPlayer().getUUID());
     }
 
     public static void setContext(CommandContext<CommandSourceStack> cmdContext, @Nullable ItemCommandContext context) {
         if (context == null) {
-            contexts.remove(cmdContext.getSource().getPlayer().getUUID());
+            CONTEXTS.remove(cmdContext.getSource().getPlayer().getUUID());
         } else {
-            contexts.put(cmdContext.getSource().getPlayer().getUUID(), context);
+            CONTEXTS.put(cmdContext.getSource().getPlayer().getUUID(), context);
         }
     }
 

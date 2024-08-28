@@ -23,6 +23,15 @@ def chiseledDepends(task, taskName) {
     }
 }
 
+discordWebhook {
+    webhook_url = secrets.get("discord_webhook_url")
+}
+
+stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
+    group = "project"
+    ofTask "build"
+}
+
 stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
     group = "project"
     dependsOn("chiseledStonecutter")
@@ -43,11 +52,3 @@ stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
     }
 }
 
-stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chiseled) {
-    group = "project"
-    ofTask "build"
-}
-
-discordWebhook {
-    webhook_url = secrets.get("discord_webhook_url")
-}

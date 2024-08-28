@@ -67,7 +67,7 @@ public class CustomDurabilityMod implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
             DEBUG("[CustomDurabilityMod] Server Started");
             CustomDurabilityMod.SERVER = server;
-            this.updateRegistry();
+            this.updateDurabilityRegistry();
         });
 
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
@@ -77,16 +77,16 @@ public class CustomDurabilityMod implements ModInitializer {
 
         // When the durability is changed in our config, we update the items with the new durabilities and send the new registry to all players
         ModEvents.ON_DURABILITY_CHANGED.register(() -> {
-            this.updateRegistry();
+            this.updateDurabilityRegistry();
             LOGGER.info("[CustomDurabilityMod] Durability registry changed sending Sync Packet to all players!");
             CustomDurabilityMod.SERVER.getPlayerList().getPlayers().forEach(player ->
                     ServerPlayNetworking.send(player, new SyncPayload(DurabilityRegistry.getDurabilityOverrides())));
         });
 
-
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register((player, joined) -> {
             LOGGER.info("[CustomDurabilityMod] Syncing packets for player '{}', sending Sync Packet!", player.getName().getString());
             ServerPlayNetworking.send(player, new SyncPayload(DurabilityRegistry.getDurabilityOverrides()));
+            ModCommands.init(SERVER.registryAccess());
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->
@@ -95,7 +95,7 @@ public class CustomDurabilityMod implements ModInitializer {
 
     }
 
-    public void updateRegistry() {
+    public void updateDurabilityRegistry() {
         LOGGER.info("[CustomDurabilityMod] Updating Durability Registry");
         List<String> removed = DurabilityRegistry.setFrom(ModConfig.INSTANCE.durability_overrides);
         this.updateItems(removed);

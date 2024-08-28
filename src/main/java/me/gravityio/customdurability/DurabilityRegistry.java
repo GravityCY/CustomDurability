@@ -8,6 +8,7 @@ import java.util.function.BiConsumer;
 
 public class DurabilityRegistry {
     private static final LinkedHashMap<String, Integer> durabilityOverrides = new LinkedHashMap<>();
+
     public static void register(String itemId, int durability) {
         durabilityOverrides.put(itemId, durability);
     }
@@ -29,13 +30,13 @@ public class DurabilityRegistry {
     }
 
     public static List<String> setFrom(Map<String, Integer> newDurabilities) {
-        List<String> removed = new ArrayList<>();
+        List<String> removed = new ArrayList<>(durabilityOverrides.size());
         durabilityOverrides.forEach((k, v) -> {
             if (newDurabilities.containsKey(k)) return;
             removed.add(k);
         });
-        clear();
-        newDurabilities.forEach(DurabilityRegistry::register);
+        durabilityOverrides.clear();
+        durabilityOverrides.putAll(newDurabilities);
         return removed;
     }
 }

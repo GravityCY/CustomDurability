@@ -30,18 +30,18 @@
   "commands.customdurability.messages.add_all": "Add all?",
   "commands.customdurability.messages.confirm": "§aConfirm",
   "commands.customdurability.messages.cancel": "§cCancel",
-  "commands.customdurability.messages.remove": "§cRemove",
   "commands.customdurability.messages.edit": "Edit",
+  "commands.customdurability.messages.remove": "§cRemove",
 
   "commands.customdurability.messages.confirm.tooltip": "§aConfirm",
   "commands.customdurability.messages.cancel.tooltip": "§cCancel",
-  "commands.customdurability.messages.remove.tooltip": "Removes the item from the config.",
   "commands.customdurability.messages.edit.tooltip": "Edits the item in chat.",
+  "commands.customdurability.messages.remove.tooltip": "Removes the item from the config.",
 
   "commands.customdurability.messages.context.confirm.tooltip": "Adds all items in the current context to the config.",
   "commands.customdurability.messages.context.cancel.tooltip": "Clears the current context.",
-  "commands.customdurability.messages.context.remove.tooltip": "Removes the item from the temporary context.",
   "commands.customdurability.messages.context.edit.tooltip": "Edits the item from the temporary context in chat.",
+  "commands.customdurability.messages.context.remove.tooltip": "Removes the item from the temporary context.",
 
   "commands.customdurability.filter_types.tool": "§7[§dTools§7]",
   "commands.customdurability.filter_types.weapon": "§7[§dWeapons§7]",

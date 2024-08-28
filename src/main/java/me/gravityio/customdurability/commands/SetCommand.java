@@ -59,8 +59,8 @@ public class SetCommand {
     private static LiteralArgumentBuilder<CommandSourceStack> buildItem() {
         var itemCmd = Commands.literal("item");
 
-        var itemArg = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM))
-                .suggests(new ItemSuggestionProvider());
+        var itemArg = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM));
+        itemArg.suggests(new ItemSuggestionProvider());
         var durabilityArg = Commands.argument("durability", IntegerArgumentType.integer());
 
         durabilityArg.executes(context -> {

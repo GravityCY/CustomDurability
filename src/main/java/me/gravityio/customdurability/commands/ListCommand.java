@@ -2,26 +2,23 @@ package me.gravityio.customdurability.commands;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import me.gravityio.customdurability.ModConfig;
-import net.minecraft.ChatFormatting;
+import me.gravityio.customdurability.decorator.*;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 public class ListCommand {
-    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> ELEMENT_DISPLAY = (entry, message) -> {
-        var id = entry.getKey();
-        var durability = entry.getValue();
-
-        var string = " - '§b%s§r': %d".formatted(id, durability);
-        message.append(string);
-    };
-    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> ELEMENT_BUTTONS_MODIFIER = getElementButtons("/cd set item %s %d", "/cd clear %s", Component.translatable("commands.customdurability.messages.edit.tooltip"), Component.translatable("commands.customdurability.messages.remove.tooltip"));
-    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> NEWLINE = (entry, message) -> message.append("\n");
-    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> DEFAULT_MODIFIER = ELEMENT_DISPLAY.andThen(ELEMENT_BUTTONS_MODIFIER).andThen(NEWLINE);
+    public static TextDecorator ELEMENT_DISPLAY_DECORATOR;
+    public static TextDecorator ELEMENT_BUTTONS_DECORATOR = new ElementButtonDecorator(
+            "/cd set item %s %d", "/cd clear %s",
+            Component.translatable("commands.customdurability.messages.edit"), Component.translatable("commands.customdurability.messages.edit.tooltip"),
+            Component.translatable("commands.customdurability.messages.remove"), Component.translatable("commands.customdurability.messages.remove"));
+    public static TagElementDecorator TAG_LIST_DECORATOR;
+    public static TextDecorator.DecoratorList DEFAULT_DECORATOR;
 
     public static Style getStyleRunCommand(String command, Component tooltip) {
         return Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, tooltip));
@@ -31,30 +28,10 @@ public class ListCommand {
         return Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, tooltip));
     }
 
-    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> getElementButtons(String setCommandFormat, String clearCommandFormat, Component setTooltip, Component removeTooltip) {
-        return (entry, message) -> {
-            var id = entry.getKey();
-            var durability = entry.getValue();
-
-            var setCommand = setCommandFormat.formatted(id, durability);
-            var clearCommand = clearCommandFormat.formatted(id);
-
-            message.append(" ");
-            message.append("§7[");
-            message.append(Component.translatable("commands.customdurability.messages.edit").withStyle(getStyleSuggestCommand(setCommand, setTooltip)));
-            message.append("§7]");
-
-            message.append(" ");
-            message.append("§7[");
-            message.append(Component.translatable("commands.customdurability.messages.remove").withStyle(getStyleRunCommand(clearCommand, removeTooltip)));
-            message.append("§7]");
-        };
-    }
-
-    public static MutableComponent getListBuilder(HashMap<String, Integer> data, BiConsumer<Map.Entry<String, Integer>, MutableComponent> elementModifier) {
+    public static MutableComponent getListBuilder(HashMap<String, Integer> data, TextDecorator.DecoratorList decorator) {
         var message = Component.literal("");
         for (Map.Entry<String, Integer> entry : data.entrySet()) {
-            elementModifier.accept(entry, message);
+            decorator.decorate(entry, message);
         }
         return message;
     }
@@ -65,8 +42,14 @@ public class ListCommand {
         }
         var message = Component.translatable("commands.customdurability.list");
         message.append("\n");
-        message.append(getListBuilder(ModConfig.INSTANCE.durability_overrides, DEFAULT_MODIFIER));
+        message.append(getListBuilder(ModConfig.INSTANCE.durability_overrides, DEFAULT_DECORATOR));
         return message;
+    }
+
+    public static void init(RegistryAccess registry) {
+        ELEMENT_DISPLAY_DECORATOR = new ElementDisplayDecorator(registry);
+        TAG_LIST_DECORATOR = new TagElementDecorator(registry, ELEMENT_DISPLAY_DECORATOR);
+        DEFAULT_DECORATOR = ELEMENT_DISPLAY_DECORATOR.create().then(ELEMENT_BUTTONS_DECORATOR).then(SimpleDecorator.NEWLINE).then(TAG_LIST_DECORATOR);
     }
 
     public static LiteralArgumentBuilder<CommandSourceStack> build() {

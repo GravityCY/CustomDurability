@@ -4,15 +4,19 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import me.gravityio.customdurability.decorator.ElementButtonDecorator;
+import me.gravityio.customdurability.decorator.SimpleDecorator;
+import me.gravityio.customdurability.decorator.TextDecorator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.*;
 
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public class ContextCommand {
@@ -33,9 +37,17 @@ public class ContextCommand {
 
     public static final Component NO_CONTEXT = Component.translatable("commands.customdurability.context.no_context");
 
-    public static BiConsumer<Map.Entry<String, Integer>, MutableComponent> DEFAULT_MODIFIER = ListCommand.ELEMENT_DISPLAY
-            .andThen(ListCommand.getElementButtons("/cd context set item %s %d", "/cd context clear %s", Component.translatable("commands.customdurability.messages.context.edit.tooltip"), Component.literal("Removes the item from the temporary context.")))
-            .andThen(ListCommand.NEWLINE);
+    public static TextDecorator ELEMENT_BUTTON_DECORATOR = new ElementButtonDecorator(
+            "/cd context set item %s %d", "/cd context clear %s",
+            Component.translatable("commands.customdurability.messages.edit"), Component.translatable("commands.customdurability.messages.context.edit.tooltip"),
+            Component.translatable("commands.customdurability.messages.remove"), Component.translatable("commands.customdurability.messages.context.remove.tooltip"));
+    public static TextDecorator.DecoratorList DEFAULT_DECORATOR;
+
+    public static void init(RegistryAccess registry) {
+        DEFAULT_DECORATOR = ListCommand.ELEMENT_DISPLAY_DECORATOR.create()
+                .then(ELEMENT_BUTTON_DECORATOR)
+                .then(SimpleDecorator.NEWLINE);
+    }
 
     public static MutableComponent getListMessage(ModCommands.ItemCommandContext context) {
         if (context.getAdditions().isEmpty()) {
@@ -44,7 +56,7 @@ public class ContextCommand {
 
         var message = Component.translatable("commands.customdurability.context.list");
         message.append("\n");
-        message.append(ListCommand.getListBuilder(context.getAdditions(), DEFAULT_MODIFIER));
+        message.append(ListCommand.getListBuilder(context.getAdditions(), DEFAULT_DECORATOR));
         message.append("\n");
 
         message.append(Component.translatable("commands.customdurability.messages.filter"));
@@ -216,6 +228,8 @@ public class ContextCommand {
         var itemCommand = Commands.literal("item");
 
         var itemArgument = Commands.argument("item", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM));
+        itemArgument.suggests(new ItemSuggestionProvider());
+
         var durabilityArgument = Commands.argument("durability", IntegerArgumentType.integer(0));
 
         durabilityArgument.executes(cmdContext -> {
