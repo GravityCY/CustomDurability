@@ -37,7 +37,7 @@ stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
 }
 
 // GRADLE?? WHAT THE FUCKKKKK
-// I'm just trying to get the subprojects to give the root project info of the mod website file id responses.... a black box
+// my brain hurt
 stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
     group = "project"
     dependsOn("chiseledStonecutter")
