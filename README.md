@@ -15,9 +15,9 @@ Change any item's durability with a Command!
 
 ## Commands
 A bunch of commands to help you set the durability of an item using its ID or Tag, or bulk setting by using wildcards
-- `/cd armorMultiplier <True or False>`
+- `/cd armorMultiplier [True or False]`
   - _whether to use the vanilla armor multipliers for armor_ (more on this below)
-- `/cd clear <Optional Item ID or Tag>`: 
+- `/cd clear [Optional Item ID or Tag]`
   - _sets all configured items back to their default vanilla durabilities_ 
   - _without the optional argument, clears all configured durabilities._
   - _with the optional argument, clears that specified item or tag._
@@ -25,21 +25,21 @@ A bunch of commands to help you set the durability of an item using its ID or Ta
   - *lists all items, tags and their new durabilities.*
 
 
-- `/cd set item <Item ID or Tag> <Durability>`
+- `/cd set item [Item ID or Tag] [Durability]`
   - *sets an item (or tag) to a durability*
-- `/cd set wildcard <String with Wildcards> <Durability>` 
+- `/cd set wildcard [String with Wildcards] [Durability]` 
   - *adds items using wildcards to a temporary context* (more on this below)
 
 
 - `/cd context list`
   - *lists all items in your current context.*
-- `/cd context clear <Optional Item ID>`
+- `/cd context clear [Optional Item ID]`
   - *clears all items in your current context.*
-- `/cd context set item <Item ID or Tag> <Durability>`
+- `/cd context set item [Item ID or Tag] [Durability]`
   - *sets an item in your current context to a durability.*
-- `/cd context set all <Durability>`
+- `/cd context set all [Durability]`
   - *sets all items in your current context to a durability.*
-- `/cd context filter <TOOL / WEAPON / ARMOUR / OTHER>`
+- `/cd context filter [TOOL / WEAPON / ARMOUR / OTHER]`
   - *filters items in your current context list based off of the given input* (**KEEPS** the thing you inputted, look at example below) 
 - `/cd context confirm`
   - *applies all the item configurations in your current context into your main config.*
@@ -107,5 +107,5 @@ I added some tags that should help with some of the more common items:
   - `netherite`
 
 You'd use these by for example doing:
-- For Wooden Tools: `/cd set item #cd:tools/wood <durability>`
-- For Leather Armor: `/cd set item #cd:armor/leather <durability>`
+- For Wooden Tools: `/cd set item #cd:tools/wood [durability]`
+- For Leather Armor: `/cd set item #cd:armor/leather [durability]`

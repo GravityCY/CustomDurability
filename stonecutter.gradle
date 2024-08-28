@@ -1,5 +1,6 @@
 plugins {
     id "me.gravityio.discord-webhook" version "0.0.2"
+    id "me.gravityio.replacementplugin" version "0.0.7" // my local experimental plugin, just delete if you fork
 }
 
 plugins.apply "dev.kikugie.stonecutter"
@@ -17,6 +18,7 @@ stonecutter.versions.forEach {
     rootProject.ext.data.put(it.project, new UploadData())
 }
 
+
 def chiseledDepends(Task task, String taskName) {
     def setupTask = rootProject.tasks.named("chiseledStonecutter")
     stonecutter.versions.forEach {
@@ -25,6 +27,14 @@ def chiseledDepends(Task task, String taskName) {
         task.dependsOn(subtask)
         subtask.mustRunAfter(setupTask)
     }
+}
+
+replacement {
+    fileName = "README.md"
+    types = ["modrinth", "curseforge"]
+    values = [
+            "fabric": ["https://modrinth.com/mod/fabric-api", "https://curseforge.com/minecraft/mc-mods/fabric-api"]
+    ]
 }
 
 discordWebhook {

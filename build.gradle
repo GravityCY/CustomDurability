@@ -1,10 +1,7 @@
-import net.darkhax.curseforgegradle.TaskPublishCurseForge
-
 plugins {
     id "fabric-loom" version "1.6-SNAPSHOT"
     id "com.modrinth.minotaur" version "2.+"
     id 'net.darkhax.curseforgegradle' version '1.1.23'
-    id "me.gravityio.replacementplugin" version "0.0.7" // my local experimental plugin, just delete if you fork
 }
 
 version = "$rootProject.mod_version+$project.name"
@@ -52,14 +49,6 @@ project.dependencies.add("modImplementation", "net.fabricmc.fabric-api:fabric-ap
 dependencies {
 }
 
-replacement {
-    fileName = "README.md"
-    types = ["modrinth", "curseforge"]
-    values = [
-            "fabric": ["https://modrinth.com/mod/fabric-api", "https://curseforge.com/minecraft/mc-mods/fabric-api"]
-    ]
-}
-
 //tasks.register("subtask-a") {
 //    dependsOn "subtask-b"
 //    dependsOn "subtask-c"
@@ -88,7 +77,7 @@ tasks.register('publishMod') {
     dependsOn "publishCurseForge"
 }
 
-tasks.register('publishCurseForge', TaskPublishCurseForge) {
+tasks.register('publishCurseForge', net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     disableVersionDetection()
 
     group = "publishing"
@@ -100,6 +89,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
         mainFile.addGameVersion(it)
     }
     mainFile.displayName = nameWithVer
+    mainFile.
     mainFile.addModLoader("Fabric")
     mainFile.releaseType = "release"
     mainFile.addJavaVersion("Java ${javaVersionNum}");
