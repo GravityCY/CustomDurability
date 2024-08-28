@@ -62,6 +62,7 @@ A bunch of commands to help you set the durability of an item using its ID or Ta
 
 This then puts it into your temporary context, which would match with all diamond tools, 
 and diamond armor, which you don't want, you'd then have to either:
+- click the tool filtering button `Keep all: [TOOL] [WEAPON] [ARMOUR] [OTHER]` 
 - run `/cd context filter TOOL` to keep all tools and filter out armour
 - or just manually remove all the armour items.
 
@@ -70,7 +71,7 @@ and diamond armor, which you don't want, you'd then have to either:
 ## Context
 `/cd set wildcard` doesn't immediately put all the items it matches into your main config, 
 in order to not add things the wildcard wasn't supposed to get, it puts it in a temporary config that you can remove or edit the entries until you decide to 
-apply it to the main config, either through `/cd context confirm` or by clicking the button shown when running the wildcard command.
+apply it to the main config, either through `/cd context confirm` or by clicking the button shown after running `/cd set wildcard` command (or shown in the `/cd context list` command).
 
 ---
 
