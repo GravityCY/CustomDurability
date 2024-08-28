@@ -67,7 +67,6 @@ class UploadData {
 }
 
 //tasks.register("subtask-a") {
-//    dependsOn "build"
 //
 //    finalizedBy "subtask-b"
 //    finalizedBy "subtask-c"
@@ -81,6 +80,7 @@ class UploadData {
 //}
 //
 //tasks.register("subtask-b") {
+//    dependsOn "build"
 //    doLast {
 //        println "Subtask B"
 //        rootProject.ext.data.last.modrinthFileId = project.version
@@ -88,6 +88,7 @@ class UploadData {
 //}
 //
 //tasks.register("subtask-c") {
+//    dependsOn "build"
 //    doLast {
 //        println "Subtask C"
 //        rootProject.ext.data.last.curseFileId = project.version

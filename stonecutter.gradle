@@ -46,7 +46,7 @@ stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
         message += "$rootProject.ext.changelog_overview\n\n"
         message += "**To view the details of the changelog visit the [Modrinth changelog page](<https://modrinth.com/mod/customdurability/changelog>) or the [CurseForge files page](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${rootProject.ext.data[0].curseFileId}>)**\n"
         message += "**As always report any issues on my [GitHub](<${rootProject.mod_sources}>) or in https://discord.com/channels/1112046604183162961/1245461284992843946**\n"
-        message += "@CustomDurability"
+        message += "<@&1277910793085521940>"
         rootProject.file("temp-discord.md").write(message)
         tasks.named("sendDiscordWebhook").configure {
             it.content = message
