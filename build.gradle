@@ -60,52 +60,32 @@ replacement {
     ]
 }
 
-class UploadData {
-    def version;
-    def modrinthFileId;
-    def curseFileId;
-}
-
 //tasks.register("subtask-a") {
-//
-//    finalizedBy "subtask-b"
-//    finalizedBy "subtask-c"
-//
-//    doLast {
-//        println "Subtask A"
-//        def data = new UploadData()
-//        data.version = project.version
-//        rootProject.ext.data += data
-//    }
+//    dependsOn "subtask-b"
+//    dependsOn "subtask-c"
 //}
 //
 //tasks.register("subtask-b") {
-//    dependsOn "build"
+//    dependsOn remapJar
 //    doLast {
 //        println "Subtask B"
-//        rootProject.ext.data.last.modrinthFileId = project.version
+//        rootProject.ext.data.get(stonecutter.current.project).modrinthFileId = project.version
 //    }
 //}
 //
 //tasks.register("subtask-c") {
-//    dependsOn "build"
+//    dependsOn remapJar
 //    doLast {
 //        println "Subtask C"
-//        rootProject.ext.data.last.curseFileId = project.version
+//        rootProject.ext.data.get(stonecutter.current.project).curseFileId = project.version
 //    }
 //}
 
 tasks.register('publishMod') {
     group = "publishing"
 
-    finalizedBy "modrinth"
-    finalizedBy "publishCurseForge"
-
-    doLast {
-        def data = new UploadData()
-        data.version = project.version
-        rootProject.ext.data += data
-    }
+    dependsOn "modrinth"
+    dependsOn "publishCurseForge"
 }
 
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
@@ -127,7 +107,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
     mainFile.addRequirement(fabricApi)
 
     doLast {
-        rootProject.ext.data.last.curseFileId = mainFile.curseFileId
+        rootProject.ext.data.get(stonecutter.current.project).curseFileId = mainFile.curseFileId
     }
 }
 
@@ -148,7 +128,7 @@ modrinth {
 
 tasks.named("modrinth").configure {
     doLast {
-        rootProject.ext.data.last.modrinthFileId = uploadInfo.id
+        rootProject.ext.data.get(stonecutter.current.project).modrinthFileId = it.uploadInfo.id
     }
 }
 

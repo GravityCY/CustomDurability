@@ -5,21 +5,25 @@ plugins {
 plugins.apply "dev.kikugie.stonecutter"
 
 stonecutter.active "1.21" /* [SC] DO NOT EDIT */
-
 def secrets = new Properties()
 rootProject.file("secrets.properties").withInputStream { secrets.load(it) }
 
-rootProject.ext.data = []
+rootProject.ext.data = new LinkedHashMap<String, UploadData>()
 rootProject.ext.changelog_overview = file("changelog-overview.md").text
 rootProject.ext.changelog_details = file("changelog-details.md").text
 rootProject.ext.changelog = rootProject.changelog_overview + "\n" + rootProject.changelog_details
 
-def chiseledDepends(task, taskName) {
+stonecutter.versions.forEach {
+    rootProject.ext.data.put(it.project, new UploadData())
+}
+
+def chiseledDepends(Task task, String taskName) {
     def setupTask = rootProject.tasks.named("chiseledStonecutter")
     stonecutter.versions.forEach {
-        def subtask = rootProject.project(it.project).tasks.named(taskName)
+        Project p = rootProject.project(it.project)
+        Task subtask = p.tasks.named(taskName).get()
         task.dependsOn(subtask)
-        subtask.get().mustRunAfter(setupTask)
+        subtask.mustRunAfter(setupTask)
     }
 }
 
@@ -32,6 +36,8 @@ stonecutter.registerChiseled tasks.register("chiseledBuild", stonecutter.chisele
     ofTask "build"
 }
 
+// GRADLE?? WHAT THE FUCKKKKK
+// I'm just trying to get the subprojects to give the root project info of the mod website file id responses.... a black box
 stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
     group = "project"
     dependsOn("chiseledStonecutter")
@@ -40,14 +46,18 @@ stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
 
     doLast {
         def message = ""
-        rootProject.ext.data.forEach {
-            message += "# $rootProject.name $it.version Update ([Modrinth](<https://modrinth.com/mod/customdurability/version/${it.modrinthFileId}>) | [Curseforge](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${it.curseFileId}>))\n"
+
+        rootProject.ext.data.each {
+            UploadData upData = it.value
+            message += "# $rootProject.name $it.key Update ([Modrinth](<https://modrinth.com/mod/customdurability/version/${upData.modrinthFileId}>) | [Curseforge](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${upData.curseFileId}>))\n"
         }
         message += "$rootProject.ext.changelog_overview\n\n"
-        message += "**To view the details of the changelog visit the [Modrinth changelog page](<https://modrinth.com/mod/customdurability/changelog>) or the [CurseForge files page](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${rootProject.ext.data[0].curseFileId}>)**\n"
+        message += "**To view the details of the changelog visit the [Modrinth changelog page](<https://modrinth.com/mod/customdurability/changelog>) or the [CurseForge files page](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${rootProject.ext.data.firstEntry().value.curseFileId}>)**\n"
         message += "**As always report any issues on my [GitHub](<${rootProject.mod_sources}>) or in https://discord.com/channels/1112046604183162961/1245461284992843946**\n"
         message += "<@&1277910793085521940>"
-        rootProject.file("temp-discord.md").write(message)
+        rootProject.file("temp").mkdir()
+        rootProject.file("temp/discord.md").write(message)
+
         tasks.named("sendDiscordWebhook").configure {
             it.content = message
         }

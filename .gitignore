@@ -42,3 +42,4 @@ replay_*.log
 /READMEMR.md
 
 secrets.properties
+/temp/
