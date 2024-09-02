@@ -18,17 +18,6 @@ stonecutter.versions.forEach {
     rootProject.ext.data.put(it.project, new UploadData())
 }
 
-
-def chiseledDepends(Task task, String taskName) {
-    def setupTask = rootProject.tasks.named("chiseledStonecutter")
-    stonecutter.versions.forEach {
-        Project p = rootProject.project(it.project)
-        Task subtask = p.tasks.named(taskName).get()
-        task.dependsOn(subtask)
-        subtask.mustRunAfter(setupTask)
-    }
-}
-
 replacement {
     fileName = "README.md"
     types = ["modrinth", "curseforge"]
@@ -59,9 +48,10 @@ stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
 
         rootProject.ext.data.each {
             UploadData upData = it.value
-            message += "# $rootProject.name $it.key Update ([Modrinth](<https://modrinth.com/mod/customdurability/version/${upData.modrinthFileId}>) | [Curseforge](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${upData.curseFileId}>))\n"
+            message += "# $rootProject.name ${rootProject.mod_version}+${it.key} Update ([Modrinth](<https://modrinth.com/mod/customdurability/version/${upData.modrinthFileId}>) | [Curseforge](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${upData.curseFileId}>))\n"
         }
         message += "$rootProject.ext.changelog_overview\n\n"
+
         message += "**To view the details of the changelog visit the [Modrinth changelog page](<https://modrinth.com/mod/customdurability/changelog>) or the [CurseForge files page](<https://curseforge.com/minecraft/mc-mods/customdurability/files/${rootProject.ext.data.firstEntry().value.curseFileId}>)**\n"
         message += "**As always report any issues on my [GitHub](<${rootProject.mod_sources}>) or in https://discord.com/channels/1112046604183162961/1245461284992843946**\n"
         message += "<@&1277910793085521940>"
@@ -71,6 +61,16 @@ stonecutter.registerChiseled tasks.register("chiseledPublishMod") {
         tasks.named("sendDiscordWebhook").configure {
             it.content = message
         }
+    }
+}
+
+def chiseledDepends(Task task, String taskName) {
+    def setupTask = rootProject.tasks.named("chiseledStonecutter")
+    stonecutter.versions.forEach {
+        Project p = rootProject.project(it.project)
+        Task subtask = p.tasks.named(taskName).get()
+        task.dependsOn(subtask)
+        subtask.mustRunAfter(setupTask)
     }
 }
 
